@@ -1,0 +1,38 @@
+name: home_manager
+description: A new Flutter application.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^0.1.2
+  states_rebuilder:
+  flutter_launcher_icons:
+  qr_flutter:
+  shape_of_view:
+  line_icons:
+  expandable:
+  getflutter:
+  flutter_sim_country_code:
+  cloud_firestore:
+  firebase_auth:
+  google_sign_in:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
