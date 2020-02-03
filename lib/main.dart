@@ -9,11 +9,15 @@ import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonFiles/CommonWidgetsAndData.dart';
+import 'CommonFiles/LoadingScreen.dart';
 import 'CommonFiles/SignInPage.dart';
+import 'CommonFiles/TenantOrOwnerPage.dart';
 import 'Models/UserDetails.dart';
 import 'Owner/OwnerHomePage.dart';
+import 'Tenant/TenantHomePage.dart';
 
 void main() {
+  runApp(RentManager());
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -22,7 +26,6 @@ void main() {
   );
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
-  runApp(RentManager());
 }
 
 class RentManager extends StatelessWidget {
@@ -51,16 +54,18 @@ class RentManager extends StatelessWidget {
 class CheckIfTenant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future:
-          futureDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
+    return StreamBuilder(
+      stream:
+      streamDoc('users/${Injector
+          .get<UserDetails>(context: context)
+          .uid}'),
       builder: (context, userDoc) {
-        try {
-          return userDoc.data['isTenant'] ? Tenant() : Owner();
-        } catch (e) {
-          if (userDoc.hasData) return TenantOrOwner();
-        }
-        return LoadingScreen();
+        if (userDoc.hasData && !userDoc.hasError) {
+          return userDoc.data['isTenant']
+              ? Tenant()
+              : Owner() ?? TenantOrOwner();
+        } else
+          return LoadingScreen();
       },
     );
   }

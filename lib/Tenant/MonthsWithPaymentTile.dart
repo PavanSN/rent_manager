@@ -5,6 +5,8 @@ import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
+import '../CommonFiles/LoadingScreen.dart';
+
 class MonthsWithPaymentTile extends StatelessWidget {
   final int year;
 
@@ -43,14 +45,16 @@ class PayTile extends StatelessWidget {
               '${nameOfMonth(month)} $year ${DateTime.now().month == month && DateTime.now().year == year ? '(This Month)' : ''}',
             ),
             icon: FutureBuilder(
-              future: futureDoc(
+              future: streamDoc(
                   'tenantPayments/${Injector.get<UserDetails>().uid}/payments/$year'),
               builder: (context, paymentDoc) {
-                if (!paymentDoc.hasData) return Text('Loading');
-                return _PayStatus(
-                  status:
-                      getStatus(month, year, paymentDoc.data[month.toString()]),
-                );
+                if (paymentDoc.hasData && !paymentDoc.hasError) {
+                  return _PayStatus(
+                    status:
+                    getStatus(month, year, paymentDoc.data[month.toString()]),
+                  );
+                } else
+                  return LoadingScreen();
               },
             ),
           ),

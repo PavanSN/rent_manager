@@ -9,6 +9,8 @@ updateDoc(data, path) => Firestore.instance.document(path).updateData(data);
 
 streamColl(path) => Firestore.instance.collection(path).snapshots();
 
+streamDoc(path) => Firestore.instance.document(path).snapshots();
+
 futureDoc(path) => Firestore.instance.document(path).get();
 
 ThemeData theme = ThemeData(

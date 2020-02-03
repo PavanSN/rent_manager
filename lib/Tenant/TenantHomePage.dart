@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:getflutter/getflutter.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
+import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/TenantYearPressed.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
+import '../CommonFiles/CommonWidgetsAndData.dart';
+import '../CommonFiles/LoadingScreen.dart';
 import 'MonthsWithPaymentTile.dart';
 import 'Notice.dart';
 import 'SelfQRCode.dart';
@@ -34,7 +36,7 @@ class Tenant extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(child: _Body()),
+      body: _Body(),
     );
   }
 }
@@ -60,72 +62,6 @@ List<Widget> _actions(context) => [
 
 //========================== Action Buttons ==================================//
 
-//========================== Profile Button start ================================//
-
-class _ProfileIcon extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.3,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          StateBuilder(
-            models: [Injector.get<UserDetails>()],
-            builder: (context, _) {
-              return Material(
-                elevation: 15,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50)),
-                child: GFAvatar(
-                  backgroundColor: Colors.transparent,
-                  backgroundImage:
-                      NetworkImage(Injector.get<UserDetails>().photoUrl),
-                ),
-              );
-            },
-          ),
-          UserName(),
-          HomeID(),
-        ],
-      ),
-    );
-  }
-}
-
-class HomeID extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: futureDoc('users/${Injector.get<UserDetails>().uid}'),
-      builder: (context, userDoc) {
-        if (!userDoc.hasData) return Text('Loading');
-        return Text(
-          'Home ID : ${userDoc.data['homeId']}',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        );
-      },
-    );
-  }
-}
-
-class UserName extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StateBuilder(
-      models: [Injector.get<UserDetails>()],
-      builder: (context, _) {
-        return Text(
-          'Hello, ${Injector.get<UserDetails>().name}',
-          style: TextStyle(fontSize: 21, fontWeight: FontWeight.w300),
-        );
-      },
-    );
-  }
-}
-
-//========================== Profile Button end ==================================//
-
 class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -133,15 +69,17 @@ class _Body extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
         Center(
-          child: _ProfileIcon(),
+          child: ProfileIcon(),
         ),
         Expanded(
           child: FutureBuilder(
             future: futureDoc('users/${Injector.get<UserDetails>().uid}'),
             builder: (context, userDoc) {
-              return IfTenantGetHome(
-                  didTenantGetHome:
-                      userDoc.data['homeId'] == null ? false : true);
+              if (userDoc.hasData && !userDoc.hasError) {
+                return MonthlyPaymentsVisibility(
+                    didTenantGetHome: userDoc.data['homeId'] != null);
+              } else
+                return LoadingScreen();
             },
           ),
         )
@@ -150,10 +88,10 @@ class _Body extends StatelessWidget {
   }
 }
 
-class IfTenantGetHome extends StatelessWidget {
+class MonthlyPaymentsVisibility extends StatelessWidget {
   final bool didTenantGetHome;
 
-  IfTenantGetHome({this.didTenantGetHome});
+  MonthlyPaymentsVisibility({this.didTenantGetHome});
 
   @override
   Widget build(BuildContext context) {
@@ -175,10 +113,12 @@ class IfTenantGetHome extends StatelessWidget {
                   .document('users/${Injector.get<UserDetails>().uid}')
                   .get(),
               builder: (context, userDoc) {
-                if (!userDoc.hasData) return Text('Loading');
-                return Tabs(
-                  accCreated: userDoc.data['accCreated'],
-                );
+                if (userDoc.hasData && !userDoc.hasError) {
+                  return Tabs(
+                    accCreated: userDoc.data['accCreated'],
+                  );
+                } else
+                  return LoadingScreen();
               },
             ),
           ),
