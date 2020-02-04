@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 createDoc(data, path) => Firestore.instance.document(path).setData(data);
@@ -14,15 +15,17 @@ streamDoc(path) => Firestore.instance.document(path).snapshots();
 futureDoc(path) => Firestore.instance.document(path).get();
 
 ThemeData theme = ThemeData(
-  scaffoldBackgroundColor: Color(0xFFF6F6F6),
-  appBarTheme: AppBarTheme(
-    brightness: Brightness.light,
-    color: Colors.transparent,
-    iconTheme: IconThemeData(color: Colors.grey),
-    elevation: 0,
-  ),
-  buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-);
+    scaffoldBackgroundColor: Color(0xFFF6F6F6),
+    appBarTheme: AppBarTheme(
+      brightness: Brightness.light,
+      color: Colors.transparent,
+      iconTheme: IconThemeData(color: Colors.grey),
+      elevation: 0,
+    ),
+    buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+    primaryColor: Colors.red,
+    accentColor: Colors.redAccent,
+    cursorColor: Colors.red);
 
 String nameOfMonth(month) {
   switch (month) {
@@ -76,11 +79,16 @@ bottomSheet(context, body, headingText) => showModalBottomSheet(
       context: context,
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          padding: MediaQuery
+              .of(context)
+              .viewInsets,
+          child: ListView(
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
             children: <Widget>[
+              SizedBox(
+                height: 15,
+              ),
               Text(
                 headingText,
                 textAlign: TextAlign.center,
@@ -95,4 +103,3 @@ bottomSheet(context, body, headingText) => showModalBottomSheet(
         );
       },
     );
-

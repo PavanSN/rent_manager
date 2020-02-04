@@ -3,6 +3,7 @@ import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/Models/UserDetails.dart';
+import 'package:home_manager/Owner/AddTenant.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -17,7 +18,7 @@ class Owner extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(LineIcons.plus),
-          onPressed: null,
+          onPressed: () => addTenant(context),
         ),
       ),
       body: OwnerBody(),

@@ -19,6 +19,7 @@ dependencies:
   cloud_firestore:
   firebase_auth:
   google_sign_in:
+  qrscan:
 
 dev_dependencies:
   flutter_test:
