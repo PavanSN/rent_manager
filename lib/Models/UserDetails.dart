@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
@@ -6,6 +7,7 @@ class UserDetails extends StatesRebuilder {
   String uid = '';
   String photoUrl = '';
   String email = '';
+  int buildings = 0;
 
   UserDetails() {
     getDetails();

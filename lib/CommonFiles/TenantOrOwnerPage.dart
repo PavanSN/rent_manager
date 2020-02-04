@@ -39,7 +39,10 @@ class TenantOrOwner extends StatelessWidget {
                 titleText: "If you are owning the house...",
                 btnText: "Owner",
                 onPressed: () {
-                  var data = {'isTenant': false};
+                  var data = {
+                    'isTenant': false,
+                    'homeId': Injector.get<UserDetails>().uid
+                  };
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
                       .then((data) {
                     Navigator.push(context,

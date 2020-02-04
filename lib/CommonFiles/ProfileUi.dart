@@ -4,18 +4,20 @@ import 'package:states_rebuilder/states_rebuilder.dart';
 
 import '../Models/UserDetails.dart';
 
-class ProfileIcon extends StatelessWidget {
+class ProfileUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.3,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          ProfilePhoto(),
-          UserName(),
+    return Center(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.3,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            ProfilePhoto(),
+            UserName(),
 //          HomeID(),
-        ],
+          ],
+        ),
       ),
     );
   }

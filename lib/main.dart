@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:home_manager/CommonFiles/LoadingScreen.dart';
 import 'package:home_manager/CommonFiles/TenantOrOwnerPage.dart';
-import 'package:home_manager/Models/TenantYearPressed.dart';
+import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-
 import 'CommonFiles/CommonWidgetsAndData.dart';
 import 'CommonFiles/LoadingScreen.dart';
 import 'CommonFiles/SignInPage.dart';
@@ -34,7 +33,7 @@ class RentManager extends StatelessWidget {
     return Injector(
       inject: [
         Inject(() => UserDetails()),
-        Inject(() => TenantYearPressed()),
+        Inject(() => TabPressed()),
       ],
       builder: (context) {
         return MaterialApp(
@@ -42,7 +41,7 @@ class RentManager extends StatelessWidget {
           home: StreamBuilder(
             stream: FirebaseAuth.instance.onAuthStateChanged,
             builder: (context, user) {
-              return user.hasData ? CheckIfTenant() : SignInPage();
+              return user.hasData ? ShowTenantOrOwner() : SignInPage();
             },
           ),
         );
@@ -51,22 +50,33 @@ class RentManager extends StatelessWidget {
   }
 }
 
-class CheckIfTenant extends StatelessWidget {
+class ShowTenantOrOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream:
-      streamDoc('users/${Injector
-          .get<UserDetails>(context: context)
-          .uid}'),
+          streamDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
       builder: (context, userDoc) {
-        if (userDoc.hasData && !userDoc.hasError) {
-          return userDoc.data['isTenant']
-              ? Tenant()
-              : Owner() ?? TenantOrOwner();
-        } else
+        try {
+          return userDoc.data['isTenant'] == null
+              ? TenantOrOwner()
+              : CheckTenantOrOwner(userDoc: userDoc);
+        } catch (e) {
+          print(e);
           return LoadingScreen();
+        }
       },
     );
+  }
+}
+
+class CheckTenantOrOwner extends StatelessWidget {
+  final AsyncSnapshot userDoc;
+
+  CheckTenantOrOwner({this.userDoc});
+
+  @override
+  Widget build(BuildContext context) {
+    return userDoc.data['isTenant'] ? Tenant() : Owner();
   }
 }

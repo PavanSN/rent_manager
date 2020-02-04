@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
-import 'package:home_manager/Models/TenantYearPressed.dart';
+import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-
 import '../CommonFiles/CommonWidgetsAndData.dart';
 import '../CommonFiles/LoadingScreen.dart';
 import 'MonthsWithPaymentTile.dart';
@@ -68,18 +67,19 @@ class _Body extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
-        Center(
-          child: ProfileIcon(),
-        ),
+        ProfileUi(),
         Expanded(
           child: FutureBuilder(
             future: futureDoc('users/${Injector.get<UserDetails>().uid}'),
             builder: (context, userDoc) {
-              if (userDoc.hasData && !userDoc.hasError) {
+              try{
                 return MonthlyPaymentsVisibility(
-                    didTenantGetHome: userDoc.data['homeId'] != null);
-              } else
+                  didTenantGetHome: userDoc.data['homeId'] != null,
+                );
+              }catch(e){
+                print(e);
                 return LoadingScreen();
+              }
             },
           ),
         )
@@ -113,12 +113,14 @@ class MonthlyPaymentsVisibility extends StatelessWidget {
                   .document('users/${Injector.get<UserDetails>().uid}')
                   .get(),
               builder: (context, userDoc) {
-                if (userDoc.hasData && !userDoc.hasError) {
+                try{
                   return Tabs(
                     accCreated: userDoc.data['accCreated'],
                   );
-                } else
+                }catch(e){
                   return LoadingScreen();
+                }
+
               },
             ),
           ),
@@ -129,12 +131,12 @@ class MonthlyPaymentsVisibility extends StatelessWidget {
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           StateBuilder(
-            models: [Injector.get<TenantYearPressed>()],
+            models: [Injector.get<TabPressed>()],
             builder: (context, _) {
               return Expanded(
                 flex: 8,
                 child: MonthsWithPaymentTile(
-                  year: Injector.get<TenantYearPressed>().yearPressed ??
+                  year: Injector.get<TabPressed>().yearPressed ??
                       DateTime.now().year,
                 ),
               );
@@ -158,7 +160,7 @@ class Tabs extends StatelessWidget {
       length: getTabs(accCreated).length,
       child: TabBar(
         onTap: (index) =>
-            Injector.get<TenantYearPressed>().yearTapped(accCreated + index),
+            Injector.get<TabPressed>().yearTapped(accCreated + index),
         labelStyle: TextStyle(
           fontWeight: FontWeight.w700,
         ),
