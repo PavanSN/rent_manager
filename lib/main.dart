@@ -7,6 +7,7 @@ import 'package:home_manager/CommonFiles/TenantOrOwnerPage.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+
 import 'CommonFiles/CommonWidgetsAndData.dart';
 import 'CommonFiles/LoadingScreen.dart';
 import 'CommonFiles/SignInPage.dart';
@@ -62,7 +63,7 @@ class ShowTenantOrOwner extends StatelessWidget {
               ? TenantOrOwner()
               : CheckTenantOrOwner(userDoc: userDoc);
         } catch (e) {
-          print(e);
+          print('Error while trying show tenant or owner ' + e.toString());
           return LoadingScreen();
         }
       },

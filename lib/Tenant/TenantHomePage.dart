@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
@@ -7,6 +6,7 @@ import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+
 import '../CommonFiles/CommonWidgetsAndData.dart';
 import '../CommonFiles/LoadingScreen.dart';
 import 'MonthsWithPaymentTile.dart';
@@ -75,6 +75,7 @@ class _Body extends StatelessWidget {
               try{
                 return MonthlyPaymentsVisibility(
                   didTenantGetHome: userDoc.data['homeId'] != null,
+                  tenantDoc: userDoc,
                 );
               }catch(e){
                 print(e);
@@ -90,8 +91,9 @@ class _Body extends StatelessWidget {
 
 class MonthlyPaymentsVisibility extends StatelessWidget {
   final bool didTenantGetHome;
+  final AsyncSnapshot tenantDoc;
 
-  MonthlyPaymentsVisibility({this.didTenantGetHome});
+  MonthlyPaymentsVisibility({this.didTenantGetHome, this.tenantDoc});
 
   @override
   Widget build(BuildContext context) {
@@ -108,20 +110,8 @@ class MonthlyPaymentsVisibility extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Expanded(
-            child: FutureBuilder(
-              future: Firestore.instance
-                  .document('users/${Injector.get<UserDetails>().uid}')
-                  .get(),
-              builder: (context, userDoc) {
-                try{
-                  return Tabs(
-                    accCreated: userDoc.data['accCreated'],
-                  );
-                }catch(e){
-                  return LoadingScreen();
-                }
-
-              },
+            child: Tabs(
+              accCreated: tenantDoc.data['accCreated'],
             ),
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),

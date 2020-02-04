@@ -13,11 +13,9 @@ dependencies:
   states_rebuilder:
   flutter_launcher_icons:
   qr_flutter:
-  shape_of_view:
   line_icons:
-  expandable:
   getflutter:
-  flutter_sim_country_code:
+  url_launcher:
   cloud_firestore:
   firebase_auth:
   google_sign_in:

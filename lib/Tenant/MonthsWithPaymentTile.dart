@@ -5,8 +5,6 @@ import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
-import '../CommonFiles/LoadingScreen.dart';
-
 class MonthsWithPaymentTile extends StatelessWidget {
   final int year;
 
@@ -44,17 +42,22 @@ class PayTile extends StatelessWidget {
             title: Text(
               '${nameOfMonth(month)} $year ${DateTime.now().month == month && DateTime.now().year == year ? '(This Month)' : ''}',
             ),
-            icon: FutureBuilder(
-              future: streamDoc(
-                  'tenantPayments/${Injector.get<UserDetails>().uid}/payments/$year'),
+            icon: StreamBuilder(
+              stream: streamDoc(
+                  'users/${Injector
+                      .get<UserDetails>()
+                      .uid}/payments/$year'),
               builder: (context, paymentDoc) {
-                if (paymentDoc.hasData && !paymentDoc.hasError) {
+                try {
                   return _PayStatus(
-                    status:
-                    getStatus(month, year, paymentDoc.data[month.toString()]),
+                    status: getStatus(
+                        month, year, paymentDoc.data[month.toString()]),
                   );
-                } else
-                  return LoadingScreen();
+                } catch (e) {
+                  print(
+                      'error in mnthswithpaymenttile paytile ' + e.toString());
+                  return Text('Loading...');
+                }
               },
             ),
           ),
@@ -75,8 +78,10 @@ getStatus(month, year, paymentMonthInDB) {
       year == DateTime.now().year &&
       paymentMonthInDB == '') {
     return 'unpaid';
-  } else
+  } else if (paymentMonthInDB != null) {
     return 'paid';
+  } else
+    return 'unpaid';
 }
 
 //============================= Trailing icon button ========================//
