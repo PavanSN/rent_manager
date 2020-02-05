@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/Owner/OwnerHomePage.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
@@ -23,6 +24,13 @@ class TenantOrOwner extends StatelessWidget {
                 btnText: "Tenant",
                 onPressed: () {
                   var data = {'isTenant': true};
+                  Firestore.instance
+                      .document(
+                      'users/${Injector
+                          .get<UserDetails>()
+                          .uid}/payments/${DateTime
+                          .now()
+                          .year}').setData({});
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
                       .then((data) {
                     Navigator.push(context,
@@ -75,7 +83,7 @@ class ChoosingCard extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.9,
         child: Card(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           elevation: 8,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

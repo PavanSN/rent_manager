@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
+import 'package:home_manager/Models/RazorpayPayments.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -34,6 +35,7 @@ class PayTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String monthYear = month.toString() + year.toString();
     return Column(
       children: <Widget>[
         Card(
@@ -46,12 +48,12 @@ class PayTile extends StatelessWidget {
               stream: streamDoc(
                   'users/${Injector
                       .get<UserDetails>()
-                      .uid}/payments/$year'),
+                      .uid}/payments/payments'),
               builder: (context, paymentDoc) {
                 try {
                   return _PayStatus(
-                    status: getStatus(
-                        month, year, paymentDoc.data[month.toString()]),
+                    status: getStatus(month, year, paymentDoc.data),
+                    monthYear: monthYear,
                   );
                 } catch (e) {
                   print(
@@ -70,15 +72,16 @@ class PayTile extends StatelessWidget {
 // ============================= Pay Tile ==================================//
 
 getStatus(month, year, paymentMonthInDB) {
+  String monthYear = month.toString() + year.toString();
   if (month < DateTime.now().month &&
       year == DateTime.now().year &&
-      paymentMonthInDB == '') {
+      paymentMonthInDB[monthYear] == '') {
     return 'due';
   } else if (month >= DateTime.now().month &&
       year == DateTime.now().year &&
-      paymentMonthInDB == '') {
+      paymentMonthInDB[monthYear] == '') {
     return 'unpaid';
-  } else if (paymentMonthInDB != null) {
+  } else if (paymentMonthInDB[monthYear] != null) {
     return 'paid';
   } else
     return 'unpaid';
@@ -88,8 +91,9 @@ getStatus(month, year, paymentMonthInDB) {
 
 class _PayStatus extends StatelessWidget {
   final String status;
+  final String monthYear;
 
-  _PayStatus({this.status});
+  _PayStatus({this.status, this.monthYear});
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +135,7 @@ class _PayStatus extends StatelessWidget {
           ),
           PayButton(
             color: Colors.green,
+            monthYear: monthYear,
           )
         ],
       );
@@ -141,15 +146,34 @@ class _PayStatus extends StatelessWidget {
 
 class PayButton extends StatelessWidget {
   final Color color;
+  final monthYear;
 
-  PayButton({this.color});
+  PayButton({this.color, this.monthYear});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      onPressed: () => null,
-      child: Text('Pay 7000'),
-      color: color,
+    return FutureBuilder(
+      future: futureDoc('users/${Injector
+          .get<UserDetails>()
+          .uid}'),
+      builder: (context, tenantDoc) {
+        try {
+          return RaisedButton(
+            onPressed: () {
+              print(monthYear);
+              return RazorpayPayments(
+                  rent: double.parse(tenantDoc.data['rent']),
+                  monthYear: monthYear)
+                  .orderPayment();
+            },
+            child: Text('Pay ${tenantDoc.data['rent']}'),
+            color: color,
+          );
+        } catch (e) {
+          print(e.toString() + 'in paybutton tenant');
+          return Text('Loading...');
+        }
+      },
     );
   }
 }

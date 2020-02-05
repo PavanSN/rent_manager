@@ -20,6 +20,8 @@ dependencies:
   firebase_auth:
   google_sign_in:
   qrscan:
+  razorpay_flutter:
+  fluttertoast:
 
 dev_dependencies:
   flutter_test:

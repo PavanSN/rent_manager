@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
+import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
+import 'package:home_manager/Owner/Subscriptions.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -20,6 +22,32 @@ class Owner extends StatelessWidget {
           icon: Icon(LineIcons.plus),
           onPressed: () => addTenant(context),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.attach_money),
+            onPressed: () =>
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return Subscriptions();
+                    },
+                  ),
+                ),
+          ),
+          IconButton(
+            icon: Icon(LineIcons.wrench),
+            onPressed: () =>
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return Settings();
+                    },
+                  ),
+                ),
+          ),
+        ],
       ),
       body: OwnerBody(),
     );
@@ -73,7 +101,7 @@ class BuildingsTab extends StatelessWidget {
           );
         } catch (e) {
           print('Error in buildingsTab ${e.toString()}');
-          return Text("Loading");
+          return Text("");
         }
       },
     );
@@ -113,10 +141,11 @@ class BuildingsData extends StatelessWidget {
                   try {
                     return TenantsList(
                       tenantDoc: tenantDoc,
+                      tenantDocRef: ownerDoc.data[buildingName][index],
                       name: tenantDoc.data['name'],
                     );
                   } catch (e) {
-                    return Text('Loading...');
+                    return Text('');
                   }
                 },
               );
@@ -124,7 +153,7 @@ class BuildingsData extends StatelessWidget {
           );
         } catch (e) {
           print('Error in Buildingsdata ${e.toString()}');
-          return Text("Loading...");
+          return Text("");
         }
       },
     );
@@ -134,8 +163,9 @@ class BuildingsData extends StatelessWidget {
 class TenantsList extends StatelessWidget {
   final AsyncSnapshot tenantDoc;
   final String name;
+  final tenantDocRef;
 
-  TenantsList({this.tenantDoc, this.name});
+  TenantsList({this.tenantDoc, this.name, this.tenantDocRef});
 
   @override
   Widget build(BuildContext context) {
@@ -160,12 +190,15 @@ class TenantsList extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
-                      return TenantPayments(tenantDoc: tenantDoc,);
+                      return TenantPayments(
+                        tenantDoc: tenantDoc,
+                        tenantDocRef: tenantDocRef,
+                      );
                     },
                   ),
                 );
               },
-            )
+            ),
           ],
         ),
       ),
