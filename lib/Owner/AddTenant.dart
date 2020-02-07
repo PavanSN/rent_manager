@@ -1,39 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 TextEditingController buildingNameController = TextEditingController();
-TextEditingController rentForTenant = TextEditingController();
+TextEditingController rentForTenantController = TextEditingController();
+TextEditingController upiIdController = TextEditingController();
 
-addTenant(context) {
+addTenant(context, upiId) {
+  upiIdController.text = upiId;
   bottomSheet(
     context,
     Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          child: TextField(
-            controller: buildingNameController,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              labelText: 'Enter your building name (Case sensitive)',
-            ),
-          ),
+        TextInput(
+          labelText: 'Enter your building name (Case Sensitive)',
+          controller: buildingNameController,
         ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          child: TextField(
-            controller: rentForTenant,
-            keyboardType: TextInputType.numberWithOptions(),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              labelText: 'Rent to be given by the tenant',
-            ),
-          ),
+        TextInput(
+          labelText: 'Rent to be given by the tenant',
+          controller: rentForTenantController,
+        ),
+        TextInput(
+          labelText: 'Enter your UPI ID',
+          controller: upiIdController,
         ),
         RaisedButton(
           color: Colors.red,
@@ -46,10 +40,34 @@ addTenant(context) {
   );
 }
 
+class TextInput extends StatelessWidget {
+  final controller;
+  final labelText;
+
+  TextInput({this.labelText, this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 15),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          labelText: labelText,
+        ),
+      ),
+    );
+  }
+}
+
 addTenantToBuilding(BuildContext context) async {
-  if (rentForTenant.text.isEmpty || buildingNameController.text.isEmpty) {
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(content: Text('Please fill up the fields')));
+  if (rentForTenantController.text.isEmpty ||
+      buildingNameController.text.isEmpty ||
+      upiIdController.text.isEmpty) {
+    Fluttertoast.showToast(msg: 'Please fill up the fields...');
+  } else if (!upiIdController.text.contains('@')) {
+    Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
   } else {
     String tenantUid = await scanner.scan();
     Firestore.instance
@@ -73,7 +91,7 @@ addTenantToBuilding(BuildContext context) async {
             .updateData({});
       }).then((_) {
         Firestore.instance.document('users/$tenantUid').updateData({
-          'rent': rentForTenant.text,
+          'rent': rentForTenantController.text,
         });
       });
     }).then((_) {

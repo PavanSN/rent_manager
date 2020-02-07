@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
@@ -20,7 +21,14 @@ class Owner extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(LineIcons.plus),
-          onPressed: () => addTenant(context),
+          onPressed: () {
+            Firestore.instance.document('users/${Injector
+                .get<UserDetails>()
+                .uid}').get().then((doc) {
+              String upiId = doc.data['upiId'];
+              return addTenant(context, upiId);
+            });
+          },
         ),
         actions: <Widget>[
           IconButton(
@@ -59,7 +67,7 @@ class OwnerBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        ProfileUi(),
+        ProfileUi(isOwner: true,),
         Expanded(
           flex: 1,
           child: BuildingsTab(),

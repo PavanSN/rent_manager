@@ -30,12 +30,15 @@ class TenantOrOwner extends StatelessWidget {
                           .get<UserDetails>()
                           .uid}/payments/${DateTime
                           .now()
-                          .year}').setData({});
+                          .year}')
+                      .setData({});
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
-                      .then((data) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Tenant()));
-                  });
+                      .then(
+                        (data) {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => Tenant()));
+                    },
+                  );
                 },
               );
             },
@@ -47,15 +50,23 @@ class TenantOrOwner extends StatelessWidget {
                 titleText: "If you are owning the house...",
                 btnText: "Owner",
                 onPressed: () {
+                  var date = DateTime.now();
+                  var expDate = DateTime(date.year, date.month, date.day + 30)
+                      .millisecondsSinceEpoch;
                   var data = {
                     'isTenant': false,
-                    'homeId': Injector.get<UserDetails>().uid
+                    'homeId': Injector
+                        .get<UserDetails>()
+                        .uid,
+                    'expDate': expDate,
                   };
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
-                      .then((data) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Owner()));
-                  });
+                      .then(
+                        (data) {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => Owner()));
+                    },
+                  );
                 },
               );
             },

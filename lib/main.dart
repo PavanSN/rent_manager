@@ -55,15 +55,15 @@ class ShowTenantOrOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream:
-          streamDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
+      stream: streamDoc('users/${Injector
+          .get<UserDetails>()
+          .uid}'),
       builder: (context, userDoc) {
         try {
           return userDoc.data['isTenant'] == null
               ? TenantOrOwner()
               : CheckTenantOrOwner(userDoc: userDoc);
         } catch (e) {
-          print('Error while trying show tenant or owner ' + e.toString());
           return LoadingScreen();
         }
       },

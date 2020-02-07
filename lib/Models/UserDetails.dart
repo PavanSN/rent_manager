@@ -13,12 +13,31 @@ class UserDetails extends StatesRebuilder {
   }
 
   getDetails() {
-    FirebaseAuth.instance.currentUser().then((doc) {
-      name = doc.displayName;
-      photoUrl = doc.photoUrl;
-      uid = doc.uid;
-      email = doc.email;
+    FirebaseAuth.instance.currentUser().then((data) {
+      name = data.displayName;
+      photoUrl = data.photoUrl;
+      uid = data.uid;
+      email = data.email;
       rebuildStates();
     });
   }
+}
+
+class TenantDB extends StatesRebuilder {
+  int accCreated;
+  String homeId;
+  String name;
+  String ownerUpi;
+  int phoneNum;
+  String rent;
+  String uid;
+
+  TenantDB.fromJson(Map json)
+      : accCreated = json['accCreated'],
+        homeId = json['homeId'],
+        name = json['name'],
+        ownerUpi = json['ownerUpi'],
+        phoneNum = json['phoneNum'],
+        rent = json['rent'],
+        uid = json['uid'];
 }

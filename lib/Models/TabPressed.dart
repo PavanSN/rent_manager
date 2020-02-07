@@ -11,9 +11,8 @@ class TabPressed extends StatesRebuilder {
     rebuildStates();
   }
 
-  buildingTapped(index){
+  buildingTapped(index) {
     buildingPressed = index;
     rebuildStates();
   }
-
 }

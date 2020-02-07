@@ -3,8 +3,13 @@ import 'package:getflutter/components/avatar/gf_avatar.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import '../Models/UserDetails.dart';
+import 'CommonWidgetsAndData.dart';
 
 class ProfileUi extends StatelessWidget {
+  final bool isOwner;
+
+  ProfileUi({this.isOwner});
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -15,7 +20,10 @@ class ProfileUi extends StatelessWidget {
           children: <Widget>[
             ProfilePhoto(),
             UserName(),
-//          HomeID(),
+            Visibility(
+              visible: isOwner,
+              child: UpiID(),
+            ),
           ],
         ),
       ),
@@ -43,23 +51,26 @@ class ProfilePhoto extends StatelessWidget {
   }
 }
 
-//class HomeID extends StatelessWidget {
-//  @override
-//  Widget build(BuildContext context) {
-//    return FutureBuilder(
-//      future: futureDoc('users/${Injector.get<UserDetails>().uid}'),
-//      builder: (context, userDoc) {
-//        if (userDoc.hasData && !userDoc.hasError) {
-//          return Text(
-//            'Home ID : ${userDoc.data['homeId']}',
-//            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-//          );
-//        } else
-//          return Text('Loading');
-//      },
-//    );
-//  }
-//}
+class UpiID extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: futureDoc('users/${Injector
+          .get<UserDetails>()
+          .uid}'),
+      builder: (context, userDoc) {
+        try {
+          return Text(
+            'UPI ID : ${userDoc.data['upiId']}',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400),
+          );
+        } catch (e) {
+          return Text('Loading');
+        }
+      },
+    );
+  }
+}
 
 class UserName extends StatelessWidget {
   @override
