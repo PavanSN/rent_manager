@@ -174,10 +174,11 @@ class PayTile extends StatelessWidget {
         ),
         icon: StreamBuilder(
           stream: isTenant
-              ? streamDoc('users/${Injector
-              .get<UserDetails>()
-              .uid}/payments/payments')
-              : streamDoc('users/${tenantDocRef.documentID}'),
+              ? streamDoc(
+              'users/${Injector
+                  .get<UserDetails>()
+                  .uid}/payments/payments')
+              : streamDoc('users/${tenantDocRef.documentID}/payments/payments'),
           builder: (context, doc) {
             try {
               return PayStatus(
@@ -238,9 +239,6 @@ class PayStatus extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.05,
-          ),
           isTenant
               ? PayButton(
             monthYear: monthYear,
@@ -250,6 +248,12 @@ class PayStatus extends StatelessWidget {
               : Icon(
             Icons.close,
             color: Colors.red,
+          ),
+          SizedBox(
+            width: MediaQuery
+                .of(context)
+                .size
+                .width * 0.05,
           ),
         ],
       );
