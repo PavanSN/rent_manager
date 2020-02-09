@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
+import 'package:home_manager/CommonFiles/LoadingScreen.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
@@ -14,7 +15,42 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../Models/TabPressed.dart';
 
+class CheckSubscription extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: streamDoc('users/${Injector
+          .get<UserDetails>()
+          .uid}'),
+      builder: (context, ownerDoc) {
+        try {
+          int expDate = ownerDoc.data['expDate'];
+          var now = DateTime
+              .now()
+              .millisecondsSinceEpoch;
+          if (now <= expDate) {
+            return Owner(
+              expDate: expDate,
+            );
+          } else {
+            return Subscriptions(
+              subscriptionPeriodOverTextVisible: true,
+              expDate: expDate,
+            );
+          }
+        } catch (e) {
+          return LoadingScreen();
+        }
+      },
+    );
+  }
+}
+
 class Owner extends StatelessWidget {
+  final expDate;
+
+  Owner({this.expDate});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,9 +58,12 @@ class Owner extends StatelessWidget {
         leading: IconButton(
           icon: Icon(LineIcons.plus),
           onPressed: () {
-            Firestore.instance.document('users/${Injector
+            Firestore.instance
+                .document('users/${Injector
                 .get<UserDetails>()
-                .uid}').get().then((doc) {
+                .uid}')
+                .get()
+                .then((doc) {
               String upiId = doc.data['upiId'];
               return addTenant(context, upiId);
             });
@@ -38,7 +77,10 @@ class Owner extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) {
-                      return Subscriptions();
+                      return Subscriptions(
+                        subscriptionPeriodOverTextVisible: false,
+                        expDate: expDate,
+                      );
                     },
                   ),
                 ),
@@ -67,7 +109,9 @@ class OwnerBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        ProfileUi(isOwner: true,),
+        ProfileUi(
+          isOwner: true,
+        ),
         Expanded(
           flex: 1,
           child: BuildingsTab(),
@@ -151,6 +195,7 @@ class BuildingsData extends StatelessWidget {
                       tenantDoc: tenantDoc,
                       tenantDocRef: ownerDoc.data[buildingName][index],
                       name: tenantDoc.data['name'],
+                      tenantBuildingName: buildingName,
                     );
                   } catch (e) {
                     return Text('');
@@ -171,9 +216,11 @@ class BuildingsData extends StatelessWidget {
 class TenantsList extends StatelessWidget {
   final AsyncSnapshot tenantDoc;
   final String name;
-  final tenantDocRef;
+  final DocumentReference tenantDocRef;
+  final tenantBuildingName;
 
-  TenantsList({this.tenantDoc, this.name, this.tenantDocRef});
+  TenantsList(
+      {this.tenantDoc, this.name, this.tenantDocRef, this.tenantBuildingName});
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +230,24 @@ class TenantsList extends StatelessWidget {
         icon: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.delete,
+                color: Colors.red,
+              ),
+              onPressed: () {
+                var tenantSide = {
+                  'homeId': null,
+                  'rent': null,
+                };
+                var ownerSide = {
+                  tenantBuildingName.toString():
+                  FieldValue.arrayRemove([tenantDocRef]),
+                };
+                tenantDocRef.updateData(tenantSide);
+                myDoc().updateData(ownerSide);
+              },
+            ),
             IconButton(
               icon: Icon(Icons.call, color: Colors.green),
               onPressed: () {
@@ -200,6 +265,7 @@ class TenantsList extends StatelessWidget {
                     builder: (context) {
                       return TenantPayments(
                         tenantDoc: tenantDoc,
+                        isTenant: false,
                         tenantDocRef: tenantDocRef,
                       );
                     },

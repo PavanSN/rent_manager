@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
@@ -8,8 +9,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import '../CommonFiles/CommonWidgetsAndData.dart';
-import '../CommonFiles/LoadingScreen.dart';
-import 'Notice.dart';
 import 'SelfQRCode.dart';
 
 class Tenant extends StatelessWidget {
@@ -29,28 +28,28 @@ class Tenant extends StatelessWidget {
 //========================== Action Buttons ==================================//
 
 List<Widget> _actions(context) => [
-      IconButton(
-        icon: Icon(
-          LineIcons.bell_o,
-        ),
-        onPressed: () => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Notice())),
-      ),
-      IconButton(
-        icon: Icon(
-          LineIcons.wrench,
-        ),
-        onPressed: () => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Settings())),
-      )
-    ];
+//      IconButton(
+//        icon: Icon(
+//          LineIcons.bell_o,
+//        ),
+//        onPressed: () => Navigator.push(
+//            context, MaterialPageRoute(builder: (context) => Notice())),
+//      ),
+  IconButton(
+    icon: Icon(
+      LineIcons.wrench,
+    ),
+    onPressed: () => Navigator.push(
+        context, MaterialPageRoute(builder: (context) => Settings())),
+  )
+];
 
 //========================== Action Buttons ==================================//
 
 //================== Tenant qr code Button with route ===========================//
 
 qrButton(context) {
-  IconButton(
+  return IconButton(
     icon: Hero(
       tag: 'qrCode',
       child: Icon(
@@ -79,17 +78,24 @@ class Body extends StatelessWidget {
           isOwner: false,
         ),
         Expanded(
-          child: FutureBuilder(
-            future: futureDoc('users/${Injector.get<UserDetails>().uid}'),
+          child: StreamBuilder(
+            stream: streamDoc('users/${Injector
+                .get<UserDetails>()
+                .uid}'),
             builder: (context, userDoc) {
               try {
                 return MonthlyPayments(
                   didTenantGetHome: userDoc.data['homeId'] != null,
                   tenantDoc: userDoc,
+                  tenantDocRef: Firestore.instance
+                      .document('users/${Injector
+                      .get<UserDetails>()
+                      .uid}'),
+                  isTenant: true,
                 );
               } catch (e) {
                 print(e);
-                return LoadingScreen();
+                return Text('Loading..');
               }
             },
           ),
@@ -98,4 +104,3 @@ class Body extends StatelessWidget {
     );
   }
 }
-

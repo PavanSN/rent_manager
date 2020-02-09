@@ -9,6 +9,7 @@ import 'package:states_rebuilder/states_rebuilder.dart';
 TextEditingController buildingNameController = TextEditingController();
 TextEditingController rentForTenantController = TextEditingController();
 TextEditingController upiIdController = TextEditingController();
+TextEditingController phoneNumController = TextEditingController();
 
 addTenant(context, upiId) {
   upiIdController.text = upiId;
@@ -22,12 +23,17 @@ addTenant(context, upiId) {
           controller: buildingNameController,
         ),
         TextInput(
+          keyboardType: TextInputType.numberWithOptions(),
           labelText: 'Rent to be given by the tenant',
           controller: rentForTenantController,
         ),
         TextInput(
           labelText: 'Enter your UPI ID',
           controller: upiIdController,
+        ),
+        TextInput(
+          labelText: 'Enter tenant phone Num',
+          controller: phoneNumController,
         ),
         RaisedButton(
           color: Colors.red,
@@ -43,14 +49,16 @@ addTenant(context, upiId) {
 class TextInput extends StatelessWidget {
   final controller;
   final labelText;
+  final keyboardType;
 
-  TextInput({this.labelText, this.controller});
+  TextInput({this.labelText, this.controller, this.keyboardType});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 15),
       child: TextField(
+        keyboardType: keyboardType,
         controller: controller,
         decoration: InputDecoration(
           border: InputBorder.none,
@@ -61,11 +69,18 @@ class TextInput extends StatelessWidget {
   }
 }
 
+String excludedWords =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#\$%^&*()_+-/*';
+
 addTenantToBuilding(BuildContext context) async {
   if (rentForTenantController.text.isEmpty ||
       buildingNameController.text.isEmpty ||
-      upiIdController.text.isEmpty) {
-    Fluttertoast.showToast(msg: 'Please fill up the fields...');
+      upiIdController.text.isEmpty ||
+      rentForTenantController.text.contains(excludedWords) ||
+      phoneNumController.text.isEmpty ||
+      phoneNumController.text.contains(excludedWords)) {
+    Fluttertoast.showToast(
+        msg: 'Please fill up the fields with appropriate details');
   } else if (!upiIdController.text.contains('@')) {
     Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
   } else {
@@ -82,16 +97,16 @@ addTenantToBuilding(BuildContext context) async {
           .updateData({
         'buildings': FieldValue.arrayUnion([buildingNameController.text]),
         buildingNameController.text: FieldValue.arrayUnion(
-            [Firestore.instance.document('users/$tenantUid')])
+            [Firestore.instance.document('users/$tenantUid')]),
+        'upiId': upiIdController.text
       }).then((_) {
         Firestore.instance
-            .document('users/$tenantUid/payments/${DateTime
-            .now()
-            .year}')
+            .document('users/$tenantUid/payments/payments')
             .updateData({});
       }).then((_) {
         Firestore.instance.document('users/$tenantUid').updateData({
           'rent': rentForTenantController.text,
+          'phoneNum': phoneNumController.text
         });
       });
     }).then((_) {

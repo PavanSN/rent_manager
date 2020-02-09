@@ -5,6 +5,7 @@ class TabPressed extends StatesRebuilder {
       .now()
       .year;
   int buildingPressed = 0;
+  int tenantInBuildingIndex = 0;
 
   yearTapped(year) {
     yearPressed = year;

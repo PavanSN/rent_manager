@@ -28,9 +28,7 @@ class TenantOrOwner extends StatelessWidget {
                       .document(
                       'users/${Injector
                           .get<UserDetails>()
-                          .uid}/payments/${DateTime
-                          .now()
-                          .year}')
+                          .uid}/payments/payments')
                       .setData({});
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
                       .then(
@@ -47,7 +45,7 @@ class TenantOrOwner extends StatelessWidget {
             models: [Injector.get<UserDetails>()],
             builder: (context, _) {
               return ChoosingCard(
-                titleText: "If you are owning the house...",
+                titleText: "If you are owning the house and rented it...",
                 btnText: "Owner",
                 onPressed: () {
                   var date = DateTime.now();

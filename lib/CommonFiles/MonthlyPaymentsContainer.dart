@@ -1,20 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
-import 'package:home_manager/Models/PayUsingUpi.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonWidgetsAndData.dart';
+import 'PaymentMethodsBtmSheet.dart';
 
 class MonthlyPayments extends StatelessWidget {
   final bool didTenantGetHome;
   final AsyncSnapshot tenantDoc;
+  final isTenant;
   final DocumentReference tenantDocRef;
 
-  MonthlyPayments({this.didTenantGetHome, this.tenantDoc, this.tenantDocRef});
+  MonthlyPayments({
+    this.didTenantGetHome,
+    this.tenantDoc,
+    this.isTenant,
+    this.tenantDocRef,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +46,10 @@ class MonthlyPayments extends StatelessWidget {
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           PayTile(
+            isTenant: isTenant,
             month: DateTime.now().month,
             year: DateTime.now().year,
+            tenantDocRef: tenantDocRef,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           StateBuilder(
@@ -50,8 +58,11 @@ class MonthlyPayments extends StatelessWidget {
               return Expanded(
                 flex: 8,
                 child: MonthsWithPaymentTile(
-                  year: Injector.get<TabPressed>().yearPressed ??
-                      DateTime.now().year,
+                  year: Injector
+                      .get<TabPressed>()
+                      .yearPressed,
+                  isTenant: isTenant,
+                  tenantDocRef: tenantDocRef,
                 ),
               );
             },
@@ -117,8 +128,10 @@ List<Tab> getTabs(int accCreated) {
 
 class MonthsWithPaymentTile extends StatelessWidget {
   final int year;
+  final bool isTenant;
+  final tenantDocRef;
 
-  MonthsWithPaymentTile({this.year});
+  MonthsWithPaymentTile({this.year, this.isTenant, this.tenantDocRef});
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +141,8 @@ class MonthsWithPaymentTile extends StatelessWidget {
         return PayTile(
           month: index + 1,
           year: year,
+          isTenant: isTenant,
+          tenantDocRef: tenantDocRef,
         );
       },
     );
@@ -139,51 +154,58 @@ class MonthsWithPaymentTile extends StatelessWidget {
 class PayTile extends StatelessWidget {
   final int month;
   final int year;
+  final bool isTenant;
+  final DocumentReference tenantDocRef;
 
-  PayTile({this.month, this.year});
+  PayTile({this.month, this.year, this.isTenant, this.tenantDocRef});
 
   @override
   Widget build(BuildContext context) {
     final String monthYear = month.toString() + year.toString();
-    return Column(
-      children: <Widget>[
-        Card(
-          child: GFListTile(
-            color: Colors.white,
-            title: Text(
-              '${nameOfMonth(month)} $year ${DateTime.now().month == month && DateTime.now().year == year ? '(This Month)' : ''}',
-            ),
-            icon: StreamBuilder(
-              stream: streamDoc(
-                  'users/${Injector.get<UserDetails>().uid}/payments/payments'),
-              builder: (context, paymentDoc) {
-                try {
-                  return PayStatus(
-                    status: getStatus(month, year, paymentDoc.data),
-                    monthYear: monthYear,
-                  );
-                } catch (e) {
-                  print(
-                      'error in mnthswithpaymenttile paytile ' + e.toString());
-                  return Text('Loading...');
-                }
-              },
-            ),
-          ),
+    return Card(
+      child: GFListTile(
+        color: Colors.white,
+        title: Text(
+          '${nameOfMonth(month)} $year ${DateTime
+              .now()
+              .month == month && DateTime
+              .now()
+              .year == year ? '(This Month)' : ''}',
         ),
-      ],
+        icon: StreamBuilder(
+          stream: isTenant
+              ? streamDoc('users/${Injector
+              .get<UserDetails>()
+              .uid}/payments/payments')
+              : streamDoc('users/${tenantDocRef.documentID}'),
+          builder: (context, doc) {
+            try {
+              return PayStatus(
+                status: getStatus(month, year, doc, isTenant),
+                monthYear: monthYear,
+                tenantDocRef: tenantDocRef,
+                isTenant: isTenant,
+              );
+            } catch (e) {
+              print('error in mnthswithpaymenttile paytile ' + e.toString());
+              return Text('Loading...');
+            }
+          },
+        ),
+      ),
     );
   }
 }
 
 // ============================= Pay Tile ==================================//
 
-getStatus(month, year, paymentMonthInDB) {
+getStatus(month, year, AsyncSnapshot paymentDoc, isTenant) {
   String monthYear = month.toString() + year.toString();
-  if (paymentMonthInDB[monthYear] == null) {
-    return 'unpaid';
-  } else {
+
+  if (paymentDoc.data[monthYear] != null) {
     return 'paid';
+  } else {
+    return 'unpaid';
   }
 }
 
@@ -192,8 +214,10 @@ getStatus(month, year, paymentMonthInDB) {
 class PayStatus extends StatelessWidget {
   final String status;
   final String monthYear;
+  final DocumentReference tenantDocRef;
+  final isTenant;
 
-  PayStatus({this.status, this.monthYear});
+  PayStatus({this.status, this.monthYear, this.tenantDocRef, this.isTenant});
 
   @override
   Widget build(BuildContext context) {
@@ -217,9 +241,16 @@ class PayStatus extends StatelessWidget {
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.05,
           ),
-          PayButton(
+          isTenant
+              ? PayButton(
             monthYear: monthYear,
+            tenantDocRef: tenantDocRef,
+            isTenant: isTenant,
           )
+              : Icon(
+            Icons.close,
+            color: Colors.red,
+          ),
         ],
       );
     }
@@ -229,24 +260,33 @@ class PayStatus extends StatelessWidget {
 
 class PayButton extends StatelessWidget {
   final monthYear;
+  final DocumentReference tenantDocRef;
+  final isTenant;
 
-  PayButton({this.monthYear});
+  PayButton({this.monthYear, this.tenantDocRef, this.isTenant});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: futureDoc('users/${Injector.get<UserDetails>().uid}'),
+    return StreamBuilder(
+      stream: tenantDocRef.snapshots(),
       builder: (context, tenantDoc) {
         try {
+          var rent = tenantDoc.data['rent'];
           return RaisedButton(
             onPressed: () {
-              PayUsingUpi(
-                amount: double.parse(tenantDoc.data['rent']),
-                monthYear: monthYear,
-                receiverUpi: tenantDoc.data['ownerUpi'],
+              bottomSheet(
+                context,
+                PaymentMethods(
+                  monthYear: monthYear,
+                  amount: double.parse(rent),
+                  isTenant: isTenant,
+                ),
+                'Pay Using',
               );
             },
-            child: Text('Pay ${tenantDoc.data['rent']}'),
+            child: Text(
+              isTenant ? 'Pay ₹$rent' : 'Due ₹$rent',
+            ),
             color: Colors.green,
           );
         } catch (e) {

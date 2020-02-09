@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -21,48 +20,52 @@ class PayUsingUpi {
     this.isTenant,
     this.app,
   }) {
-    payUsing(app);
+    initTxn(app);
   }
 
-  payUsing(app) async {
-    UpiIndia upi = UpiIndia(
+  initTxn(app) async {
+    UpiIndia upi;
+
+    upi = UpiIndia(
       app: app,
       receiverUpiId: receiverUpi,
-      receiverName: null,
       transactionNote: 'Rent',
       amount: amount,
+      receiverName: 'To Owner',
     );
-    Future transaction = upi.startTransaction();
 
-    var response = UpiIndiaResponse(await transaction);
-
-    if (response.status == 'success') {
-      handleSuccess(response.transactionId, monthYear, isTenant, expDate);
-    } else {
-      Fluttertoast.showToast(msg: await transaction);
-    }
-
-    Fluttertoast.showToast(
-      msg: await transaction,
-      backgroundColor: Colors.grey,
-      textColor: Colors.white,
-      toastLength: Toast.LENGTH_LONG,
-    );
+    return txnDetails(await upi.startTransaction());
   }
-}
 
-handleSuccess(txnId, monthYear, isTenant, expDate) {
-  if (isTenant) {
-    Firestore.instance
-        .document('users/${Injector.get<UserDetails>().uid}/payments/payments')
-        .updateData({
-      monthYear: txnId,
-    });
-  } else if (!isTenant) {
-    Firestore.instance
-        .document('users/${Injector.get<UserDetails>().uid}')
-        .updateData({
-      'expDate': expDate,
-    });
+  txnDetails(txn) {
+    Fluttertoast.showToast(msg: txn);
+    var response = UpiIndiaResponse(txn);
+    print(
+        response.status + '=================================================');
+    if (response.status == 'success' || response.status == 'SUCCESS') {
+      handleSuccess(response.transactionId, monthYear, isTenant, expDate);
+    }
+  }
+
+  handleSuccess(txnId, monthYear, isTenant, expDate) {
+    print(monthYear);
+    if (isTenant) {
+      Firestore.instance
+          .document(
+          'users/${Injector
+              .get<UserDetails>()
+              .uid}/payments/payments')
+          .updateData({
+        monthYear: txnId,
+      });
+    } else if (!isTenant) {
+      Firestore.instance
+          .document('users/${Injector
+          .get<UserDetails>()
+          .uid}')
+          .updateData({
+        'expDate': expDate,
+      });
+    }
   }
 }

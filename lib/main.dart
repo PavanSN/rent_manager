@@ -54,18 +54,23 @@ class RentManager extends StatelessWidget {
 class ShowTenantOrOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: streamDoc('users/${Injector
-          .get<UserDetails>()
-          .uid}'),
-      builder: (context, userDoc) {
-        try {
-          return userDoc.data['isTenant'] == null
-              ? TenantOrOwner()
-              : CheckTenantOrOwner(userDoc: userDoc);
-        } catch (e) {
-          return LoadingScreen();
-        }
+    return StateBuilder(
+      models: [Injector.get<UserDetails>()],
+      builder: (context, _) {
+        return StreamBuilder(
+          stream: streamDoc('users/${Injector
+              .get<UserDetails>()
+              .uid}'),
+          builder: (context, userDoc) {
+            try {
+              return userDoc.data['isTenant'] == null
+                  ? TenantOrOwner()
+                  : CheckTenantOrOwner(userDoc: userDoc);
+            } catch (e) {
+              return LoadingScreen();
+            }
+          },
+        );
       },
     );
   }
@@ -78,6 +83,6 @@ class CheckTenantOrOwner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return userDoc.data['isTenant'] ? Tenant() : Owner();
+    return userDoc.data['isTenant'] ? Tenant() : CheckSubscription();
   }
 }

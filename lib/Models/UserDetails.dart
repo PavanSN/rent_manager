@@ -22,22 +22,3 @@ class UserDetails extends StatesRebuilder {
     });
   }
 }
-
-class TenantDB extends StatesRebuilder {
-  int accCreated;
-  String homeId;
-  String name;
-  String ownerUpi;
-  int phoneNum;
-  String rent;
-  String uid;
-
-  TenantDB.fromJson(Map json)
-      : accCreated = json['accCreated'],
-        homeId = json['homeId'],
-        name = json['name'],
-        ownerUpi = json['ownerUpi'],
-        phoneNum = json['phoneNum'],
-        rent = json['rent'],
-        uid = json['uid'];
-}

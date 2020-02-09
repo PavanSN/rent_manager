@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 
 class TenantPayments extends StatelessWidget {
-  final DocumentReference tenantDocRef;
   final AsyncSnapshot tenantDoc;
+  final isTenant;
+  final DocumentReference tenantDocRef;
 
-  TenantPayments({this.tenantDoc, this.tenantDocRef});
+  TenantPayments({
+    this.tenantDoc,
+    this.isTenant,
+    this.tenantDocRef,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +25,9 @@ class TenantPayments extends StatelessWidget {
       ),
       body: MonthlyPayments(
         tenantDoc: tenantDoc,
-        tenantDocRef: tenantDocRef,
         didTenantGetHome: true,
+        isTenant: false,
+        tenantDocRef: tenantDocRef,
       ),
     );
   }
