@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PaymentMethodsBtmSheet.dart';
 
+double payAmountMonth = 50;
+double payAmountYear = 500;
+
 class Subscriptions extends StatelessWidget {
   final subscriptionPeriodOverTextVisible;
   final expDate;
@@ -57,7 +60,7 @@ class SubscriptionsBody extends StatelessWidget {
         BeautifulCard(
           color: Colors.deepPurple,
           pay: "Pay Monthly",
-          payAmount: "₹50 / 30 Days",
+          payAmount: "₹$payAmountMonth / 30 Days",
           onPressed: () {
             var date = DateTime.now();
             var expDate = DateTime(date.year, date.month, date.day + 30)
@@ -65,7 +68,8 @@ class SubscriptionsBody extends StatelessWidget {
             bottomSheet(
               context,
               PaymentMethods(
-                amount: 1,
+                monthYear: null,
+                amount: payAmountMonth,
                 expDate: expDate,
                 isTenant: false,
               ),
@@ -76,26 +80,26 @@ class SubscriptionsBody extends StatelessWidget {
         SizedBox(
           height: 15,
         ),
-        BeautifulCard(
-          color: Colors.orange,
-          pay: "Pay Yearly",
-          payAmount: "₹500 / 365 Days",
-          onPressed: () {
-            var date = DateTime.now();
-            var expDate = DateTime(date.year, date.month, date.day + 365)
-                .millisecondsSinceEpoch;
-
-            bottomSheet(
-              context,
-              PaymentMethods(
-                amount: 500,
-                expDate: expDate,
-                isTenant: false,
-              ),
-              'Pay Using',
-            );
-          },
-        ),
+//        BeautifulCard(
+//          color: Colors.orange,
+//          pay: "Pay Yearly",
+//          payAmount: "₹$payAmountYear / 365 Days",
+//          onPressed: () {
+//            var date = DateTime.now();
+//            var expDate = DateTime(date.year, date.month, date.day + 365)
+//                .millisecondsSinceEpoch;
+//
+//            bottomSheet(
+//              context,
+//              PaymentMethods(
+//                amount: payAmountYear,
+//                expDate: expDate,
+//                isTenant: false,
+//              ),
+//              'Pay Using',
+//            );
+//          },
+//        ),
       ],
     );
   }

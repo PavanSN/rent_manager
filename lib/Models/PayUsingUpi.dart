@@ -42,7 +42,7 @@ class PayUsingUpi {
     var response = UpiIndiaResponse(txn);
     print(
         response.status + '=================================================');
-    if (response.status == 'success' || response.status == 'SUCCESS') {
+    if (response.status == 'success' || response.status == 'submitted') {
       handleSuccess(response.transactionId, monthYear, isTenant, expDate);
     }
   }

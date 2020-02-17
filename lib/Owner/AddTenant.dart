@@ -32,6 +32,7 @@ addTenant(context, upiId) {
           controller: upiIdController,
         ),
         TextInput(
+          keyboardType: TextInputType.numberWithOptions(),
           labelText: 'Enter tenant phone Num',
           controller: phoneNumController,
         ),
@@ -42,7 +43,7 @@ addTenant(context, upiId) {
         ),
       ],
     ),
-    'Name of the building',
+    'Add Tenant',
   );
 }
 

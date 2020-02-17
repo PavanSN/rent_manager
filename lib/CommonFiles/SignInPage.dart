@@ -36,7 +36,7 @@ class BodyForeGround extends StatelessWidget {
                 children: <Widget>[
                   Image.asset('assets/logo.png'),
                   Text(
-                    'Home Manager',
+                    'Rent Manager',
                     style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),
                   ),
                   SignInBtn(),

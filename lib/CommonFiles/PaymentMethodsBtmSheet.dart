@@ -6,7 +6,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
 
-const pavansUpiId = 'pavansn.2000@oksbi';
+const String pavansUpiId = 'BH3000034661@yesbank';
 
 class PaymentMethods extends StatelessWidget {
   final double amount;
@@ -33,54 +33,54 @@ class PaymentMethods extends StatelessWidget {
           ),
           app: UpiIndiaApps.GooglePay,
         ),
-        PaymentMethodTile(
-          monthYear: monthYear,
-          isTenant: isTenant,
-          amount: amount,
-          expDate: expDate,
-          title: 'PhonePe',
-          leadingIcon: Icon(
-            LineIcons.paypal,
-            color: Colors.deepPurpleAccent,
-          ),
-          app: UpiIndiaApps.PhonePe,
-        ),
-        PaymentMethodTile(
-          monthYear: monthYear,
-          isTenant: isTenant,
-          amount: amount,
-          expDate: expDate,
-          title: 'MiPay',
-          leadingIcon: Icon(
-            LineIcons.money,
-            color: Colors.orange,
-          ),
-          app: UpiIndiaApps.MiPay,
-        ),
-        PaymentMethodTile(
-          monthYear: monthYear,
-          isTenant: isTenant,
-          amount: amount,
-          expDate: expDate,
-          title: 'PayTM',
-          leadingIcon: Icon(
-            LineIcons.bank,
-            color: Colors.lightBlueAccent,
-          ),
-          app: UpiIndiaApps.PayTM,
-        ),
-        PaymentMethodTile(
-          monthYear: monthYear,
-          isTenant: isTenant,
-          amount: amount,
-          expDate: expDate,
-          title: 'AmazonPay',
-          leadingIcon: Icon(
-            LineIcons.amazon,
-            color: Colors.black,
-          ),
-          app: UpiIndiaApps.AmazonPay,
-        ),
+//        PaymentMethodTile(
+//          monthYear: monthYear,
+//          isTenant: isTenant,
+//          amount: amount,
+//          expDate: expDate,
+//          title: 'PhonePe',
+//          leadingIcon: Icon(
+//            LineIcons.paypal,
+//            color: Colors.deepPurpleAccent,
+//          ),
+//          app: UpiIndiaApps.PhonePe,
+//        ),
+//        PaymentMethodTile(
+//          monthYear: monthYear,
+//          isTenant: isTenant,
+//          amount: amount,
+//          expDate: expDate,
+//          title: 'MiPay',
+//          leadingIcon: Icon(
+//            LineIcons.money,
+//            color: Colors.orange,
+//          ),
+//          app: UpiIndiaApps.MiPay,
+//        ),
+//        PaymentMethodTile(
+//          monthYear: monthYear,
+//          isTenant: isTenant,
+//          amount: amount,
+//          expDate: expDate,
+//          title: 'PayTM',
+//          leadingIcon: Icon(
+//            LineIcons.bank,
+//            color: Colors.lightBlueAccent,
+//          ),
+//          app: UpiIndiaApps.PayTM,
+//        ),
+//        PaymentMethodTile(
+//          monthYear: monthYear,
+//          isTenant: isTenant,
+//          amount: amount,
+//          expDate: expDate,
+//          title: 'AmazonPay',
+//          leadingIcon: Icon(
+//            LineIcons.amazon,
+//            color: Colors.black,
+//          ),
+//          app: UpiIndiaApps.AmazonPay,
+//        ),
       ],
     );
   }
@@ -123,13 +123,20 @@ class PaymentMethodTile extends StatelessWidget {
                     monthYear: monthYear,
                     app: app,
                     amount: amount,
-                    expDate: expDate,
                     isTenant: isTenant,
-                    receiverUpi: isTenant ? ownerUpiId : pavansUpiId,
+                    receiverUpi: ownerUpiId,
                   );
                 },
               );
             },
+          );
+        } else {
+          PayUsingUpi(
+            app: app,
+            amount: amount,
+            expDate: expDate,
+            isTenant: isTenant,
+            receiverUpi: pavansUpiId,
           );
         }
       },
