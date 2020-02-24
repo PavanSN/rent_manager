@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "32692915931-iadja5ha646p3sc8ov3g16vc663h51ep.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pavansn.rent_manager",
+            "certificate_hash": "0b4a99d79b0e855049e7e595317321cf444495d2"
+          }
+        },
+        {
+          "client_id": "32692915931-9t66bll73akklao2q8616i9f6hrn71al.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pavansn.rent_manager",
+            "certificate_hash": "7e2d4b02fba0c928c5a111b4895a68b8a3bda3be"
+          }
+        },
+        {
           "client_id": "32692915931-t5fn5hentf92fvu1ptnnbubophf41o9i.apps.googleusercontent.com",
           "client_type": 3
         }

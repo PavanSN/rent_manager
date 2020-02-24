@@ -7,7 +7,6 @@ import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
-import 'package:home_manager/Owner/Subscriptions.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -24,20 +23,7 @@ class CheckSubscription extends StatelessWidget {
           .uid}'),
       builder: (context, ownerDoc) {
         try {
-          int expDate = ownerDoc.data['expDate'];
-          var now = DateTime
-              .now()
-              .millisecondsSinceEpoch;
-          if (now <= expDate) {
-            return Owner(
-              expDate: expDate,
-            );
-          } else {
-            return Subscriptions(
-              subscriptionPeriodOverTextVisible: true,
-              expDate: expDate,
-            );
-          }
+          return Owner();
         } catch (e) {
           return LoadingScreen();
         }
@@ -70,21 +56,6 @@ class Owner extends StatelessWidget {
           },
         ),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.attach_money),
-            onPressed: () =>
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return Subscriptions(
-                        subscriptionPeriodOverTextVisible: false,
-                        expDate: expDate,
-                      );
-                    },
-                  ),
-                ),
-          ),
           IconButton(
             icon: Icon(LineIcons.wrench),
             onPressed: () =>
@@ -224,58 +195,110 @@ class TenantsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: GFListTile(
-        title: Text(name),
-        icon: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.delete,
-                color: Colors.red,
-              ),
-              onPressed: () {
-                var tenantSide = {
-                  'homeId': null,
-                  'rent': null,
-                };
-                var ownerSide = {
-                  tenantBuildingName.toString():
-                  FieldValue.arrayRemove([tenantDocRef]),
-                };
-                tenantDocRef.updateData(tenantSide);
-                myDoc().updateData(ownerSide);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.call, color: Colors.green),
-              onPressed: () {
-                launch('tel://${tenantDoc.data['phoneNum'].toString()}');
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                LineIcons.money,
-                color: Colors.teal,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return TenantPayments(
-                        tenantDoc: tenantDoc,
-                        isTenant: false,
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
+              return TenantPayments(
+                tenantDoc: tenantDoc,
+                isTenant: false,
+                tenantDocRef: tenantDocRef,
+              );
+            },
+          ),
+        );
+      },
+      child: Card(
+        child: GFListTile(
+          title: Text(name),
+          icon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+                onPressed: () {
+                  bottomSheet(
+                      context,
+                      ConfirmRemoveTenant(
                         tenantDocRef: tenantDocRef,
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ],
+                        tenantBuildingName: tenantBuildingName,
+                      ),
+                      'Do you really want to remove ${tenantDoc
+                          .data['name']}...?');
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.call, color: Colors.green),
+                onPressed: () {
+                  launch('tel://${tenantDoc.data['phoneNum'].toString()}');
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  LineIcons.money,
+                  color: Colors.teal,
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return TenantPayments(
+                          tenantDoc: tenantDoc,
+                          isTenant: false,
+                          tenantDocRef: tenantDocRef,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class ConfirmRemoveTenant extends StatelessWidget {
+  final DocumentReference tenantDocRef;
+  final String tenantBuildingName;
+
+  const ConfirmRemoveTenant({this.tenantDocRef, this.tenantBuildingName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        RaisedButton(
+          child: Text('Delete Tenant'),
+          color: Colors.red,
+          onPressed: () {
+            var tenantSide = {
+              'homeId': null,
+              'rent': null,
+            };
+            var ownerSide = {
+              tenantBuildingName.toString():
+              FieldValue.arrayRemove([tenantDocRef]),
+            };
+            tenantDocRef.updateData(tenantSide);
+            myDoc().updateData(ownerSide);
+          },
+        ),
+        RaisedButton(
+          child: Text('Don\'t Delete'),
+          color: Colors.green,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
     );
   }
 }

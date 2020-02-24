@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
+import 'package:home_manager/Models/Payment.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-
-import 'CommonWidgetsAndData.dart';
-import 'PaymentMethodsBtmSheet.dart';
+import '../CommonFiles/CommonWidgetsAndData.dart';
 
 class MonthlyPayments extends StatelessWidget {
   final bool didTenantGetHome;
@@ -275,18 +274,11 @@ class PayButton extends StatelessWidget {
       stream: tenantDocRef.snapshots(),
       builder: (context, tenantDoc) {
         try {
-          var rent = tenantDoc.data['rent'];
+          String rent = tenantDoc.data['rent'];
           return RaisedButton(
             onPressed: () {
-              bottomSheet(
-                context,
-                PaymentMethods(
-                  monthYear: monthYear,
-                  amount: double.parse(rent),
-                  isTenant: isTenant,
-                ),
-                'Pay Using',
-              );
+              Payment(amount: rent, isTenant: isTenant, monthYear: monthYear);
+              //todo payment method
             },
             child: Text(
               isTenant ? 'Pay ₹$rent' : 'Due ₹$rent',
