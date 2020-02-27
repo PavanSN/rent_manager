@@ -22,8 +22,6 @@ dependencies:
   qrscan:
   upi_india:
   fluttertoast:
-  razorpay_flutter:
-  cloud_functions:
 
 dev_dependencies:
   flutter_test:

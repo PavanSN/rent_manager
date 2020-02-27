@@ -7,7 +7,6 @@ import 'package:home_manager/CommonFiles/TenantOrOwnerPage.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-
 import 'CommonFiles/CommonWidgetsAndData.dart';
 import 'CommonFiles/LoadingScreen.dart';
 import 'CommonFiles/SignInPage.dart';
@@ -58,9 +57,7 @@ class ShowTenantOrOwner extends StatelessWidget {
       models: [Injector.get<UserDetails>()],
       builder: (context, _) {
         return StreamBuilder(
-          stream: streamDoc('users/${Injector
-              .get<UserDetails>()
-              .uid}'),
+          stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
           builder: (context, userDoc) {
             try {
               return userDoc.data['isTenant'] == null

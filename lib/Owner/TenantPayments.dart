@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'file:///C:/Users/pavan/OneDrive/Desktop/rent_manager/lib/Tenant/MonthlyPaymentsContainer.dart';
+import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 
 class TenantPayments extends StatelessWidget {
   final AsyncSnapshot tenantDoc;

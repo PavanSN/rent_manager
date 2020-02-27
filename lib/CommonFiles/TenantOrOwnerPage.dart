@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:home_manager/Owner/OwnerHomePage.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+
 import '../Models/UserDetails.dart';
 import 'CommonWidgetsAndData.dart';
-
-int trialPeriod = 60;
 
 class TenantOrOwner extends StatelessWidget {
   @override
@@ -50,8 +49,7 @@ class TenantOrOwner extends StatelessWidget {
                 btnText: "Owner",
                 onPressed: () {
                   var date = DateTime.now();
-                  var expDate = DateTime(
-                      date.year, date.month, date.day + trialPeriod)
+                  var expDate = DateTime(date.year, date.month, date.day + 30)
                       .millisecondsSinceEpoch;
                   var data = {
                     'isTenant': false,

@@ -23,7 +23,9 @@ addTenant(context, upiId) {
           controller: buildingNameController,
         ),
         TextInput(
-          keyboardType: TextInputType.numberWithOptions(),
+          keyboardType: TextInputType.numberWithOptions(
+            signed: true,
+          ),
           labelText: 'Rent to be given by the tenant',
           controller: rentForTenantController,
         ),
@@ -32,9 +34,11 @@ addTenant(context, upiId) {
           controller: upiIdController,
         ),
         TextInput(
-          keyboardType: TextInputType.numberWithOptions(),
           labelText: 'Enter tenant phone Num',
           controller: phoneNumController,
+          keyboardType: TextInputType.numberWithOptions(
+            signed: true,
+          ),
         ),
         RaisedButton(
           color: Colors.red,
@@ -43,7 +47,7 @@ addTenant(context, upiId) {
         ),
       ],
     ),
-    'Add Tenant',
+    'Name of the building',
   );
 }
 
@@ -79,7 +83,8 @@ addTenantToBuilding(BuildContext context) async {
       upiIdController.text.isEmpty ||
       rentForTenantController.text.contains(excludedWords) ||
       phoneNumController.text.isEmpty ||
-      phoneNumController.text.contains(excludedWords)) {
+      phoneNumController.text.contains(excludedWords) ||
+      !upiIdController.text.contains('@')) {
     Fluttertoast.showToast(
         msg: 'Please fill up the fields with appropriate details');
   } else if (!upiIdController.text.contains('@')) {
@@ -88,13 +93,9 @@ addTenantToBuilding(BuildContext context) async {
     String tenantUid = await scanner.scan();
     Firestore.instance
         .document('users/$tenantUid')
-        .updateData({'homeId': Injector
-        .get<UserDetails>()
-        .uid}).then((_) {
+        .updateData({'homeId': Injector.get<UserDetails>().uid}).then((_) {
       Firestore.instance
-          .document('users/${Injector
-          .get<UserDetails>()
-          .uid}')
+          .document('users/${Injector.get<UserDetails>().uid}')
           .updateData({
         'buildings': FieldValue.arrayUnion([buildingNameController.text]),
         buildingNameController.text: FieldValue.arrayUnion(

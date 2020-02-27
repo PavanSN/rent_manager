@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'file:///C:/Users/pavan/OneDrive/Desktop/rent_manager/lib/Tenant/MonthlyPaymentsContainer.dart';
+import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 import '../CommonFiles/CommonWidgetsAndData.dart';
 import 'SelfQRCode.dart';
 
@@ -28,34 +28,19 @@ class Tenant extends StatelessWidget {
 //========================== Action Buttons ==================================//
 
 List<Widget> _actions(context) => [
+//      IconButton(
+//        icon: Icon(
+//          LineIcons.bell_o,
+//        ),
+//        onPressed: () => Navigator.push(
+//            context, MaterialPageRoute(builder: (context) => Notice())),
+//      ),
   IconButton(
     icon: Icon(
       LineIcons.wrench,
     ),
-    onPressed: () =>
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Settings()),
-        ),
-  ),
-  IconButton(
-    icon: Icon(Icons.call),
-    onPressed: () {
-      myDoc().get().then((tenantDoc) {
-        return tenantDoc.data['homeId'];
-      }).then(
-            (ownerUID) {
-          Firestore.instance
-              .document('users/$ownerUID}')
-              .get()
-              .then((ownerDoc) {
-            return ownerDoc.data['phoneNum'];
-          }).then((phoneNum) {
-            launch('tel://${phoneNum.toString()}');
-          });
-        },
-      );
-    },
+    onPressed: () => Navigator.push(
+        context, MaterialPageRoute(builder: (context) => Settings())),
   )
 ];
 

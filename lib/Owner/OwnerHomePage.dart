@@ -11,19 +11,19 @@ import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../Models/TabPressed.dart';
 
 class CheckSubscription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: streamDoc('users/${Injector
-          .get<UserDetails>()
-          .uid}'),
+      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
       builder: (context, ownerDoc) {
         try {
-          return Owner();
+          int expDate = ownerDoc.data['expDate'];
+          return Owner(
+            expDate: expDate,
+          );
         } catch (e) {
           return LoadingScreen();
         }
@@ -45,9 +45,7 @@ class Owner extends StatelessWidget {
           icon: Icon(LineIcons.plus),
           onPressed: () {
             Firestore.instance
-                .document('users/${Injector
-                .get<UserDetails>()
-                .uid}')
+                .document('users/${Injector.get<UserDetails>().uid}')
                 .get()
                 .then((doc) {
               String upiId = doc.data['upiId'];
@@ -58,15 +56,14 @@ class Owner extends StatelessWidget {
         actions: <Widget>[
           IconButton(
             icon: Icon(LineIcons.wrench),
-            onPressed: () =>
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return Settings();
-                    },
-                  ),
-                ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  return Settings();
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -100,9 +97,7 @@ class BuildingsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: streamDoc('users/${Injector
-          .get<UserDetails>()
-          .uid}'),
+      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
       builder: (context, ownerDoc) {
         try {
           return DefaultTabController(
@@ -116,9 +111,7 @@ class BuildingsTab extends StatelessWidget {
               tabs: getTabs(ownerDoc),
               onTap: (index) {
                 Injector.get<TabPressed>().buildingTapped(index);
-                print(Injector
-                    .get<TabPressed>()
-                    .buildingPressed);
+                print(Injector.get<TabPressed>().buildingPressed);
               },
             ),
           );
@@ -146,15 +139,11 @@ class BuildingsData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: streamDoc('users/${Injector
-          .get<UserDetails>()
-          .uid}'),
+      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-          [Injector
-              .get<TabPressed>()
-              .buildingPressed];
+              [Injector.get<TabPressed>().buildingPressed];
           return ListView.builder(
             itemCount: ownerDoc.data[buildingName].length,
             itemBuilder: (context, index) {
@@ -195,110 +184,58 @@ class TenantsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) {
-              return TenantPayments(
-                tenantDoc: tenantDoc,
-                isTenant: false,
-                tenantDocRef: tenantDocRef,
-              );
-            },
-          ),
-        );
-      },
-      child: Card(
-        child: GFListTile(
-          title: Text(name),
-          icon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  bottomSheet(
-                      context,
-                      ConfirmRemoveTenant(
+    return Card(
+      child: GFListTile(
+        title: Text(name),
+        icon: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.delete,
+                color: Colors.red,
+              ),
+              onPressed: () {
+                var tenantSide = {
+                  'homeId': null,
+                  'rent': null,
+                };
+                var ownerSide = {
+                  tenantBuildingName.toString():
+                      FieldValue.arrayRemove([tenantDocRef]),
+                };
+                tenantDocRef.updateData(tenantSide);
+                myDoc().updateData(ownerSide);
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.call, color: Colors.green),
+              onPressed: () {
+                launch('tel://${tenantDoc.data['phoneNum'].toString()}');
+              },
+            ),
+            IconButton(
+              icon: Icon(
+                LineIcons.money,
+                color: Colors.teal,
+              ),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return TenantPayments(
+                        tenantDoc: tenantDoc,
+                        isTenant: false,
                         tenantDocRef: tenantDocRef,
-                        tenantBuildingName: tenantBuildingName,
-                      ),
-                      'Do you really want to remove ${tenantDoc
-                          .data['name']}...?');
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.call, color: Colors.green),
-                onPressed: () {
-                  launch('tel://${tenantDoc.data['phoneNum'].toString()}');
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  LineIcons.money,
-                  color: Colors.teal,
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return TenantPayments(
-                          tenantDoc: tenantDoc,
-                          isTenant: false,
-                          tenantDocRef: tenantDocRef,
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class ConfirmRemoveTenant extends StatelessWidget {
-  final DocumentReference tenantDocRef;
-  final String tenantBuildingName;
-
-  const ConfirmRemoveTenant({this.tenantDocRef, this.tenantBuildingName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        RaisedButton(
-          child: Text('Delete Tenant'),
-          color: Colors.red,
-          onPressed: () {
-            var tenantSide = {
-              'homeId': null,
-              'rent': null,
-            };
-            var ownerSide = {
-              tenantBuildingName.toString():
-              FieldValue.arrayRemove([tenantDocRef]),
-            };
-            tenantDocRef.updateData(tenantSide);
-            myDoc().updateData(ownerSide);
-          },
-        ),
-        RaisedButton(
-          child: Text('Don\'t Delete'),
-          color: Colors.green,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ],
     );
   }
 }

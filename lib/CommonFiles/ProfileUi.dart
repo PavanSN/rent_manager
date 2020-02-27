@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/avatar/gf_avatar.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+
 import '../Models/UserDetails.dart';
 import 'CommonWidgetsAndData.dart';
 
@@ -23,9 +24,37 @@ class ProfileUi extends StatelessWidget {
               visible: isOwner,
               child: UpiID(),
             ),
+            Visibility(
+              visible: isOwner,
+              child: SubscriptionExpiry(),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class SubscriptionExpiry extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: futureDoc('users/${Injector
+          .get<UserDetails>()
+          .uid}'),
+      builder: (context, userDoc) {
+        try {
+          var date = DateTime.fromMicrosecondsSinceEpoch(
+            userDoc.data['expDate'] * 1000,
+          );
+          return Text(
+            'Subscription ends on ${DateTime.utc(
+                date.year, date.month, date.day).toLocal()}',
+          );
+        } catch (e) {
+          return Text('Loading...');
+        }
+      },
     );
   }
 }
