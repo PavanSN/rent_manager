@@ -26,13 +26,11 @@ class TenantOrOwner extends StatelessWidget {
                   var data = {'isTenant': true};
                   Firestore.instance
                       .document(
-                      'users/${Injector
-                          .get<UserDetails>()
-                          .uid}/payments/payments')
+                          'users/${Injector.get<UserDetails>().uid}/payments/payments')
                       .setData({});
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
                       .then(
-                        (data) {
+                    (data) {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Tenant()));
                     },
@@ -48,19 +46,13 @@ class TenantOrOwner extends StatelessWidget {
                 titleText: "If you are owning the house and rented it...",
                 btnText: "Owner",
                 onPressed: () {
-                  var date = DateTime.now();
-                  var expDate = DateTime(date.year, date.month, date.day + 30)
-                      .millisecondsSinceEpoch;
                   var data = {
                     'isTenant': false,
-                    'homeId': Injector
-                        .get<UserDetails>()
-                        .uid,
-                    'expDate': expDate,
+                    'homeId': Injector.get<UserDetails>().uid,
                   };
                   updateDoc(data, 'users/${Injector.get<UserDetails>().uid}')
                       .then(
-                        (data) {
+                    (data) {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Owner()));
                     },
@@ -92,7 +84,7 @@ class ChoosingCard extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.9,
         child: Card(
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           elevation: 8,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -100,6 +92,7 @@ class ChoosingCard extends StatelessWidget {
               Text(
                 titleText,
                 style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
               ),
               OwnerOrTenantBtn(
                 btnText: btnText,

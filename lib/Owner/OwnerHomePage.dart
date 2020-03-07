@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:getflutter/components/button/gf_button.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/CommonFiles/LoadingScreen.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
@@ -19,24 +19,13 @@ class CheckSubscription extends StatelessWidget {
     return StreamBuilder(
       stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
       builder: (context, ownerDoc) {
-        try {
-          int expDate = ownerDoc.data['expDate'];
-          return Owner(
-            expDate: expDate,
-          );
-        } catch (e) {
-          return LoadingScreen();
-        }
+        return Owner();
       },
     );
   }
 }
 
 class Owner extends StatelessWidget {
-  final expDate;
-
-  Owner({this.expDate});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,17 +91,27 @@ class BuildingsTab extends StatelessWidget {
         try {
           return DefaultTabController(
             length: ownerDoc.data['buildings'].length,
-            child: TabBar(
-              indicatorSize: TabBarIndicatorSize.label,
-              labelColor: Colors.red,
-              indicatorColor: Colors.red,
-              unselectedLabelColor: Color(0xff5f6368),
-              isScrollable: true,
-              tabs: getTabs(ownerDoc),
-              onTap: (index) {
-                Injector.get<TabPressed>().buildingTapped(index);
-                print(Injector.get<TabPressed>().buildingPressed);
+            child: GestureDetector(
+              onLongPress: () {
+                bottomSheet(
+                  context,
+                  DeleteConfirmation(
+                    ownerDoc: ownerDoc,
+                  ),
+                  'Entire data of the building will be deleted and cannot be recovered',
+                );
               },
+              child: TabBar(
+                indicatorSize: TabBarIndicatorSize.label,
+                labelColor: Colors.red,
+                indicatorColor: Colors.red,
+                unselectedLabelColor: Color(0xff5f6368),
+                isScrollable: true,
+                tabs: getTabs(ownerDoc),
+                onTap: (index) {
+                  Injector.get<TabPressed>().buildingTapped(index);
+                },
+              ),
             ),
           );
         } catch (e) {
@@ -120,6 +119,41 @@ class BuildingsTab extends StatelessWidget {
           return Text("");
         }
       },
+    );
+  }
+}
+
+class DeleteConfirmation extends StatelessWidget {
+  final ownerDoc;
+
+  DeleteConfirmation({this.ownerDoc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        GFButton(
+          text: 'Delete building',
+          color: Colors.red,
+          onPressed: () {
+            Navigator.pop(context);
+            updateDoc({
+              'buildings': FieldValue.arrayRemove(
+                [
+                  ownerDoc.data['buildings']
+                      [Injector.get<TabPressed>().buildingPressed]
+                ],
+              ),
+            }, 'users/${Injector.get<UserDetails>().uid}');
+          },
+        ),
+        GFButton(
+          onPressed: () => Navigator.pop(context),
+          color: Colors.green,
+          text: 'Go back..',
+        )
+      ],
     );
   }
 }

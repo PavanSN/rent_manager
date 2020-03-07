@@ -6,7 +6,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
 
-const pavansUpiId = 'pavansn.2000@oksbi';
+const pavansUpiId = '7975892709@okbizaxis';
 
 class PaymentMethods extends StatelessWidget {
   final double amount;

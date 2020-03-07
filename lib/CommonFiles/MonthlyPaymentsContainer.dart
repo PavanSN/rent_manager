@@ -163,13 +163,16 @@ class PayTile extends StatelessWidget {
     final String monthYear = month.toString() + year.toString();
     return GestureDetector(
       onTap: () {
-        bottomSheet(
+        if (!isTenant) {
+          bottomSheet(
             context,
             UpdatePayment(
               tenantDocRef: tenantDocRef,
               monthYear: monthYear,
             ),
-            'Did Tenant pay rent on ${nameOfMonth(month)} $year');
+            'Did Tenant pay rent on ${nameOfMonth(month)} $year',
+          );
+        }
       },
       child: Card(
         child: GFListTile(
