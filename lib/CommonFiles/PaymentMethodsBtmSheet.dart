@@ -6,8 +6,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
 
-const pavansUpiId = '7975892709@okbizaxis';
-
 class PaymentMethods extends StatelessWidget {
   final double amount;
   final expDate;
@@ -125,7 +123,7 @@ class PaymentMethodTile extends StatelessWidget {
                     amount: amount,
                     expDate: expDate,
                     isTenant: isTenant,
-                    receiverUpi: isTenant ? ownerUpiId : pavansUpiId,
+                    receiverUpi: ownerUpiId,
                   );
                 },
               );

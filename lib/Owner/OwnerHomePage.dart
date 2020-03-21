@@ -218,58 +218,90 @@ class TenantsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: GFListTile(
-        title: Text(name),
-        icon: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.delete,
-                color: Colors.red,
-              ),
-              onPressed: () {
-                var tenantSide = {
-                  'homeId': null,
-                  'rent': null,
-                };
-                var ownerSide = {
-                  tenantBuildingName.toString():
-                      FieldValue.arrayRemove([tenantDocRef]),
-                };
-                tenantDocRef.updateData(tenantSide);
-                myDoc().updateData(ownerSide);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.call, color: Colors.green),
-              onPressed: () {
-                launch('tel://${tenantDoc.data['phoneNum'].toString()}');
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                LineIcons.money,
-                color: Colors.teal,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return TenantPayments(
-                        tenantDoc: tenantDoc,
-                        isTenant: false,
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
+              return TenantPayments(
+                tenantDoc: tenantDoc,
+                isTenant: false,
+                tenantDocRef: tenantDocRef,
+              );
+            },
+          ),
+        );
+      },
+      child: Card(
+        child: GFListTile(
+          title: Text(name),
+          icon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+                onPressed: () {
+                  bottomSheet(
+                      context,
+                      DeleteTenantPanel(
+                        tenantBuildingName: tenantBuildingName,
                         tenantDocRef: tenantDocRef,
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ],
+                      ),
+                      "Are you sure you want to remove this tenant..?");
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.call, color: Colors.green),
+                onPressed: () {
+                  launch('tel://${tenantDoc.data['phoneNum'].toString()}');
+                },
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class DeleteTenantPanel extends StatelessWidget {
+  DeleteTenantPanel({this.tenantBuildingName, this.tenantDocRef});
+
+  String tenantBuildingName;
+  DocumentReference tenantDocRef;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        GFButton(
+          color: Colors.red,
+          text: "Delete",
+          onPressed: () {
+            var tenantSide = {
+              'homeId': null,
+              'rent': null,
+            };
+            var ownerSide = {
+              tenantBuildingName.toString():
+                  FieldValue.arrayRemove([tenantDocRef]),
+            };
+            tenantDocRef.updateData(tenantSide);
+            myDoc().updateData(ownerSide);
+          },
+        ),
+        GFButton(
+          color: Colors.green,
+          text: "Cancel",
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        )
+      ],
     );
   }
 }
