@@ -320,22 +320,26 @@ class PayButton extends StatelessWidget {
       builder: (context, tenantDoc) {
         try {
           var rent = tenantDoc.data['rent'];
-          return RaisedButton(
-            onPressed: () {
-              bottomSheet(
-                context,
-                PaymentMethods(
-                  monthYear: monthYear,
-                  amount: double.parse(rent),
-                  isTenant: isTenant,
+          return Row(
+            children: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  bottomSheet(
+                    context,
+                    PaymentMethods(
+                      monthYear: monthYear,
+                      amount: double.parse(rent),
+                      isTenant: isTenant,
+                    ),
+                    'Pay Using',
+                  );
+                },
+                child: Text(
+                  isTenant ? 'Pay ₹$rent' : 'Due ₹$rent',
                 ),
-                'Pay Using',
-              );
-            },
-            child: Text(
-              isTenant ? 'Pay ₹$rent' : 'Due ₹$rent',
-            ),
-            color: Colors.green,
+                color: Colors.green,
+              ),
+            ],
           );
         } catch (e) {
           print(e.toString() + 'in paybutton tenant');

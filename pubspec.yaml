@@ -20,8 +20,8 @@ dependencies:
   firebase_auth:
   google_sign_in:
   qrscan:
-  upi_india:
   fluttertoast:
+  upi_india:
 
 dev_dependencies:
   flutter_test:

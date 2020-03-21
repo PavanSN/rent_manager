@@ -28,21 +28,32 @@ class Tenant extends StatelessWidget {
 //========================== Action Buttons ==================================//
 
 List<Widget> _actions(context) => [
-//      IconButton(
-//        icon: Icon(
-//          LineIcons.bell_o,
-//        ),
-//        onPressed: () => Navigator.push(
-//            context, MaterialPageRoute(builder: (context) => Notice())),
-//      ),
-  IconButton(
-    icon: Icon(
-      LineIcons.wrench,
-    ),
-    onPressed: () => Navigator.push(
-        context, MaterialPageRoute(builder: (context) => Settings())),
-  )
-];
+      IconButton(
+        icon: Icon(
+          Icons.info,
+          color: Colors.grey,
+        ),
+        onPressed: () {
+          bottomSheet(
+              context,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "If already paid contact your owner and send transaction details..",
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              "Already Paid..?");
+        },
+      ),
+      IconButton(
+        icon: Icon(
+          LineIcons.wrench,
+        ),
+        onPressed: () => Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Settings())),
+      )
+    ];
 
 //========================== Action Buttons ==================================//
 
@@ -56,13 +67,12 @@ qrButton(context) {
         LineIcons.qrcode,
       ),
     ),
-    onPressed: () =>
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SelfQRCode(),
-          ),
-        ),
+    onPressed: () => Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelfQRCode(),
+      ),
+    ),
   );
 }
 
@@ -79,18 +89,14 @@ class Body extends StatelessWidget {
         ),
         Expanded(
           child: StreamBuilder(
-            stream: streamDoc('users/${Injector
-                .get<UserDetails>()
-                .uid}'),
+            stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
             builder: (context, userDoc) {
               try {
                 return MonthlyPayments(
                   didTenantGetHome: userDoc.data['homeId'] != null,
                   tenantDoc: userDoc,
                   tenantDocRef: Firestore.instance
-                      .document('users/${Injector
-                      .get<UserDetails>()
-                      .uid}'),
+                      .document('users/${Injector.get<UserDetails>().uid}'),
                   isTenant: true,
                 );
               } catch (e) {
