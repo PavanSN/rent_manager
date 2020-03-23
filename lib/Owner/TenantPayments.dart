@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 
+
 class TenantPayments extends StatelessWidget {
   final AsyncSnapshot tenantDoc;
   final isTenant;
@@ -26,7 +27,7 @@ class TenantPayments extends StatelessWidget {
           )
         ],
         title: Text(
-          tenantDoc.data['name'],
+          "${tenantDoc.data['name']} (₹${tenantDoc.data['rent']})",
           style: TextStyle(color: Colors.black),
         ),
         centerTitle: true,
@@ -34,7 +35,6 @@ class TenantPayments extends StatelessWidget {
       body: MonthlyPayments(
         tenantDoc: tenantDoc,
         didTenantGetHome: true,
-        isTenant: false,
         tenantDocRef: tenantDocRef,
       ),
     );
@@ -44,7 +44,7 @@ class TenantPayments extends StatelessWidget {
 class EditRent extends StatelessWidget {
   EditRent({this.tenantDocRef});
 
-  DocumentReference tenantDocRef;
+  final DocumentReference tenantDocRef;
 
   @override
   Widget build(BuildContext context) {
@@ -64,10 +64,10 @@ class EditRent extends StatelessWidget {
 }
 
 class UpdateRent extends StatelessWidget {
-  UpdateRent({this.tenantDocRef});
+  UpdateRent({this.tenantDocRef, this.rentAmountController});
 
-  TextEditingController rentAmountController;
-  DocumentReference tenantDocRef;
+  final TextEditingController rentAmountController;
+  final DocumentReference tenantDocRef;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +85,9 @@ class UpdateRent extends StatelessWidget {
                 keyboardType: TextInputType.numberWithOptions(),
                 onSubmitted: (amt) {
                   tenantDocRef.updateData({'rent': amt});
-                  Fluttertoast.showToast(msg: 'Rent amount changed to $amt');
+                  Fluttertoast.showToast(msg: 'Rent amount for ${doc
+                      .data['name']} has changed to $amt');
+                  Navigator.pop(context);
                   Navigator.pop(context);
                 },
               ),

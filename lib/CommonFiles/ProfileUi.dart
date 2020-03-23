@@ -34,7 +34,7 @@ class ProfilePhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StateBuilder(
-      models: [Injector.get<UserDetails>()],
+      models: [Injector.get<UserDetails>(context: context)],
       builder: (context, _) {
         return Material(
           elevation: 15,
@@ -42,7 +42,9 @@ class ProfilePhoto extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
           child: GFAvatar(
             backgroundColor: Colors.transparent,
-            backgroundImage: NetworkImage(Injector.get<UserDetails>().photoUrl),
+            backgroundImage: NetworkImage(Injector
+                .get<UserDetails>(context: context)
+                .photoUrl),
           ),
         );
       },
@@ -55,7 +57,7 @@ class UpiID extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: futureDoc('users/${Injector
-          .get<UserDetails>()
+          .get<UserDetails>(context: context)
           .uid}'),
       builder: (context, userDoc) {
         try {
@@ -75,10 +77,12 @@ class UserName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StateBuilder(
-      models: [Injector.get<UserDetails>()],
+      models: [Injector.get<UserDetails>(context: context)],
       builder: (context, _) {
         return Text(
-          'Hello, ${Injector.get<UserDetails>().name}',
+          'Hello, ${Injector
+              .get<UserDetails>(context: context)
+              .name}',
           style: TextStyle(fontSize: 21, fontWeight: FontWeight.w300),
         );
       },

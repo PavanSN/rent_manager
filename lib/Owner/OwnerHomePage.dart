@@ -3,24 +3,77 @@ import 'package:flutter/material.dart';
 import 'package:getflutter/components/button/gf_button.dart';
 import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
+import 'package:home_manager/CommonFiles/LoadingScreen.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:share/share.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../Models/TabPressed.dart';
 
-class CheckSubscription extends StatelessWidget {
+class CheckIfOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
-      builder: (context, ownerDoc) {
-        return Owner();
+      stream: Firestore.instance
+          .document('users/${Injector
+          .get<UserDetails>(context: context)
+          .uid}')
+          .snapshots(),
+      builder: (context, doc) {
+        try {
+          bool isTenant = doc.data['isTenant'];
+          if (isTenant == null) {
+            return updateDoc({'isTenant': false},
+                'users/${Injector
+                    .get<UserDetails>(context: context)
+                    .uid}');
+          } else {
+            if (isTenant) {
+              return ShowNotOwnerScreen();
+            } else {
+              return Owner();
+            }
+          }
+        } catch (e) {
+          return LoadingScreen();
+        }
       },
+    );
+  }
+}
+
+class ShowNotOwnerScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Seems like you\'re the Tenant, Try to install Rent Manager (Tenant)',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            RaisedButton(
+              color: Colors.green,
+              child: Text("Install Now"),
+              onPressed: () {
+                launch(
+                    'https://play.google.com/store/apps/details?id=com.pavansn.rent_manager_tenant');
+              },
+            )
+          ],
+        ),
+      ),
     );
   }
 }
@@ -30,22 +83,51 @@ class Owner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(LineIcons.plus),
-          onPressed: () {
-            Firestore.instance
-                .document('users/${Injector.get<UserDetails>().uid}')
-                .get()
-                .then((doc) {
-              String upiId = doc.data['upiId'];
-              return addTenant(context, upiId);
-            });
-          },
+        title: Text(
+          'Owner',
+          style: TextStyle(color: Colors.black),
         ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(LineIcons.wrench),
-            onPressed: () => Navigator.push(
+        centerTitle: true,
+        leading: leading(context),
+        actions: actions(context),
+      ),
+      body: OwnerBody(),
+    );
+  }
+}
+
+List<Widget> actions(context) =>
+    [
+      IconButton(
+        icon: Icon(Icons.share),
+        onPressed: () =>
+            Share.share(
+              'Hey guys, Now you can pay and manage rent using this free app https://play.google.com/store/apps/details?id=com.pavansn.rent_manager_tenant',
+            ),
+      ),
+      IconButton(
+        icon: Icon(
+          Icons.info,
+          color: Colors.grey,
+        ),
+        onPressed: () {
+          bottomSheet(
+            context,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Sometimes transaction confirmation fails, If tenant show's proof of transaction details then edit the rent (paid or unpaid) accordingly. Please Share this app with your tenants and real estate owners to manage business efficiently",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            "Already Paid..?",
+          );
+        },
+      ),
+      IconButton(
+        icon: Icon(LineIcons.wrench),
+        onPressed: () =>
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) {
@@ -53,13 +135,25 @@ class Owner extends StatelessWidget {
                 },
               ),
             ),
-          ),
-        ],
       ),
-      body: OwnerBody(),
+    ];
+
+leading(context) =>
+    IconButton(
+      icon: Icon(LineIcons.plus),
+      onPressed: () {
+        Firestore.instance
+            .document(
+            'users/${Injector
+                .get<UserDetails>(context: context)
+                .uid}')
+            .get()
+            .then((doc) {
+          String upiId = doc.data['upiId'];
+          return addTenant(context, upiId);
+        });
+      },
     );
-  }
-}
 
 class OwnerBody extends StatelessWidget {
   @override
@@ -86,9 +180,16 @@ class BuildingsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
+      stream:
+      streamDoc('users/${Injector
+          .get<UserDetails>(context: context)
+          .uid}'),
       builder: (context, ownerDoc) {
         try {
+          String buildingName = ownerDoc.data['buildings']
+          [Injector
+              .get<TabPressed>(context: context)
+              .buildingPressed];
           return DefaultTabController(
             length: ownerDoc.data['buildings'].length,
             child: GestureDetector(
@@ -98,7 +199,7 @@ class BuildingsTab extends StatelessWidget {
                   DeleteConfirmation(
                     ownerDoc: ownerDoc,
                   ),
-                  'Entire data of the building will be deleted and cannot be recovered',
+                  'Are you sure you want to delete building $buildingName',
                 );
               },
               child: TabBar(
@@ -109,7 +210,8 @@ class BuildingsTab extends StatelessWidget {
                 isScrollable: true,
                 tabs: getTabs(ownerDoc),
                 onTap: (index) {
-                  Injector.get<TabPressed>().buildingTapped(index);
+                  Injector.get<TabPressed>(context: context)
+                      .buildingTapped(index);
                 },
               ),
             ),
@@ -124,7 +226,7 @@ class BuildingsTab extends StatelessWidget {
 }
 
 class DeleteConfirmation extends StatelessWidget {
-  final ownerDoc;
+  AsyncSnapshot ownerDoc;
 
   DeleteConfirmation({this.ownerDoc});
 
@@ -136,23 +238,30 @@ class DeleteConfirmation extends StatelessWidget {
         GFButton(
           text: 'Delete building',
           color: Colors.red,
-          onPressed: () {
-            Navigator.pop(context);
+          onPressed: () async {
+            List<String> buildingTenantsUIDs = [];
+            String buildingName = ownerDoc.data['buildings']
+            [Injector
+                .get<TabPressed>(context: context)
+                .buildingPressed];
+            for (DocumentReference doc in ownerDoc.data[buildingName]) {
+              buildingTenantsUIDs.add(doc.documentID);
+            }
             updateDoc({
-              'buildings': FieldValue.arrayRemove(
-                [
-                  ownerDoc.data['buildings']
-                      [Injector.get<TabPressed>().buildingPressed]
-                ],
-              ),
-            }, 'users/${Injector.get<UserDetails>().uid}');
+              'buildings': FieldValue.arrayRemove([buildingName]),
+              buildingName: FieldValue.delete(),
+              'userCount': FieldValue.arrayRemove(buildingTenantsUIDs),
+            }, 'users/${Injector
+                .get<UserDetails>(context: context)
+                .uid}');
+            Navigator.pop(context);
           },
         ),
         GFButton(
           onPressed: () => Navigator.pop(context),
           color: Colors.green,
           text: 'Go back..',
-        )
+        ),
       ],
     );
   }
@@ -173,11 +282,16 @@ class BuildingsData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
+      stream:
+      streamDoc('users/${Injector
+          .get<UserDetails>(context: context)
+          .uid}'),
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-              [Injector.get<TabPressed>().buildingPressed];
+          [Injector
+              .get<TabPressed>(context: context)
+              .buildingPressed];
           return ListView.builder(
             itemCount: ownerDoc.data[buildingName].length,
             itemBuilder: (context, index) {
@@ -270,8 +384,8 @@ class TenantsList extends StatelessWidget {
 class DeleteTenantPanel extends StatelessWidget {
   DeleteTenantPanel({this.tenantBuildingName, this.tenantDocRef});
 
-  String tenantBuildingName;
-  DocumentReference tenantDocRef;
+  final String tenantBuildingName;
+  final DocumentReference tenantDocRef;
 
   @override
   Widget build(BuildContext context) {
@@ -287,8 +401,8 @@ class DeleteTenantPanel extends StatelessWidget {
               'rent': null,
             };
             var ownerSide = {
-              tenantBuildingName.toString():
-                  FieldValue.arrayRemove([tenantDocRef]),
+              tenantBuildingName: FieldValue.arrayRemove([tenantDocRef]),
+              'userCount': FieldValue.arrayRemove([tenantDocRef.documentID]),
             };
             tenantDocRef.updateData(tenantSide);
             myDoc().updateData(ownerSide);

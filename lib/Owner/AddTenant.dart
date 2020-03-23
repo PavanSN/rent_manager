@@ -93,9 +93,13 @@ addTenantToBuilding(BuildContext context) async {
     String tenantUid = await scanner.scan();
     Firestore.instance
         .document('users/$tenantUid')
-        .updateData({'homeId': Injector.get<UserDetails>().uid}).then((_) {
+        .updateData({'homeId': Injector
+        .get<UserDetails>(context: context)
+        .uid}).then((_) {
       Firestore.instance
-          .document('users/${Injector.get<UserDetails>().uid}')
+          .document('users/${Injector
+          .get<UserDetails>(context: context)
+          .uid}')
           .updateData({
         'buildings': FieldValue.arrayUnion([buildingNameController.text]),
         buildingNameController.text: FieldValue.arrayUnion(
@@ -103,8 +107,7 @@ addTenantToBuilding(BuildContext context) async {
         'upiId': upiIdController.text
       }).then((_) {
         Firestore.instance
-            .document('users/$tenantUid/payments/payments')
-            .updateData({});
+            .document('users/$tenantUid/payments/payments').setData({});
       }).then((_) {
         Firestore.instance.document('users/$tenantUid').updateData({
           'rent': rentForTenantController.text,
@@ -112,6 +115,11 @@ addTenantToBuilding(BuildContext context) async {
         });
       });
     }).then((_) {
+      updateDoc({
+        'userCount': FieldValue.arrayUnion([tenantUid])
+      }, 'users/${Injector
+          .get<UserDetails>(context: context)
+          .uid}');
       Navigator.of(context).pop();
     });
   }

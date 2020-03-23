@@ -7,6 +7,7 @@ class UserDetails extends StatesRebuilder {
   String photoUrl = '';
   String email = '';
   int buildings = 0;
+  double rent = 0;
 
   UserDetails() {
     getDetails();

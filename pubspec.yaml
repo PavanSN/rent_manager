@@ -1,7 +1,7 @@
 name: home_manager
 description: A new Flutter application.
 
-version: 1.0.0+4
+version: 1.0.0+7
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -10,18 +10,17 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.3
+  getflutter:
+  fluttertoast:
   states_rebuilder:
   flutter_launcher_icons:
-  qr_flutter:
   line_icons:
-  getflutter:
   url_launcher:
   cloud_firestore:
   firebase_auth:
   google_sign_in:
   qrscan:
-  fluttertoast:
-  upi_india:
+  share:
 
 dev_dependencies:
   flutter_test:
