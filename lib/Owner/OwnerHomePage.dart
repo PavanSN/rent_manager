@@ -226,7 +226,7 @@ class BuildingsTab extends StatelessWidget {
 }
 
 class DeleteConfirmation extends StatelessWidget {
-  AsyncSnapshot ownerDoc;
+  final AsyncSnapshot ownerDoc;
 
   DeleteConfirmation({this.ownerDoc});
 
@@ -246,6 +246,9 @@ class DeleteConfirmation extends StatelessWidget {
                 .buildingPressed];
             for (DocumentReference doc in ownerDoc.data[buildingName]) {
               buildingTenantsUIDs.add(doc.documentID);
+              doc.updateData({
+                'homeId': null,
+              });
             }
             updateDoc({
               'buildings': FieldValue.arrayRemove([buildingName]),

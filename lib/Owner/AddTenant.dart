@@ -10,6 +10,7 @@ TextEditingController buildingNameController = TextEditingController();
 TextEditingController rentForTenantController = TextEditingController();
 TextEditingController upiIdController = TextEditingController();
 TextEditingController phoneNumController = TextEditingController();
+TextEditingController UIDController = TextEditingController();
 
 addTenant(context, upiId) {
   upiIdController.text = upiId;
@@ -40,11 +41,25 @@ addTenant(context, upiId) {
             signed: true,
           ),
         ),
-        RaisedButton(
-          color: Colors.red,
-          child: Text('Proceed'),
-          onPressed: () => addTenantToBuilding(context),
+        TextInput(
+          labelText: 'Tenant UID (Enter UID / Use Camera)',
+          controller: UIDController,
         ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            RaisedButton(
+              color: Colors.green,
+              child: Text('Use Camera'),
+              onPressed: () => addTenantToBuildingUsingCam(context),
+            ),
+            RaisedButton(
+              color: Colors.red,
+              child: Text('Proceed'),
+              onPressed: () => addTenantToBuildingUsingUID(context),
+            ),
+          ],
+        )
       ],
     ),
     'Name of the building',
@@ -77,7 +92,7 @@ class TextInput extends StatelessWidget {
 String excludedWords =
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#\$%^&*()_+-/*';
 
-addTenantToBuilding(BuildContext context) async {
+addTenantToBuildingUsingCam(BuildContext context) async {
   if (rentForTenantController.text.isEmpty ||
       buildingNameController.text.isEmpty ||
       upiIdController.text.isEmpty ||
@@ -91,11 +106,10 @@ addTenantToBuilding(BuildContext context) async {
     Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
   } else {
     String tenantUid = await scanner.scan();
-    Firestore.instance
-        .document('users/$tenantUid')
-        .updateData({'homeId': Injector
-        .get<UserDetails>(context: context)
-        .uid}).then((_) {
+    Firestore.instance.document('users/$tenantUid').updateData(
+        {'homeId': Injector
+            .get<UserDetails>(context: context)
+            .uid}).then((_) {
       Firestore.instance
           .document('users/${Injector
           .get<UserDetails>(context: context)
@@ -107,7 +121,8 @@ addTenantToBuilding(BuildContext context) async {
         'upiId': upiIdController.text
       }).then((_) {
         Firestore.instance
-            .document('users/$tenantUid/payments/payments').setData({});
+            .document('users/$tenantUid/payments/payments')
+            .setData({});
       }).then((_) {
         Firestore.instance.document('users/$tenantUid').updateData({
           'rent': rentForTenantController.text,
@@ -122,5 +137,60 @@ addTenantToBuilding(BuildContext context) async {
           .uid}');
       Navigator.of(context).pop();
     });
+  }
+}
+
+addTenantToBuildingUsingUID(BuildContext context) async {
+  if (rentForTenantController.text.isEmpty ||
+      buildingNameController.text.isEmpty ||
+      upiIdController.text.isEmpty ||
+      rentForTenantController.text.contains(excludedWords) ||
+      phoneNumController.text.isEmpty ||
+      phoneNumController.text.contains(excludedWords) ||
+      !upiIdController.text.contains('@') ||
+      UIDController.text.isEmpty) {
+    Fluttertoast.showToast(
+        msg: 'Please fill up the fields with appropriate details');
+  } else if (!upiIdController.text.contains('@')) {
+    Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
+  } else {
+    String tenantUid = UIDController.text;
+    try {
+      Firestore.instance.document('users/$tenantUid').updateData({
+        'homeId': Injector
+            .get<UserDetails>(context: context)
+            .uid
+      }).then((_) {
+        Firestore.instance
+            .document(
+            'users/${Injector
+                .get<UserDetails>(context: context)
+                .uid}')
+            .updateData({
+          'buildings': FieldValue.arrayUnion([buildingNameController.text]),
+          buildingNameController.text: FieldValue.arrayUnion(
+              [Firestore.instance.document('users/$tenantUid')]),
+          'upiId': upiIdController.text
+        }).then((_) {
+          Firestore.instance
+              .document('users/$tenantUid/payments/payments')
+              .setData({});
+        }).then((_) {
+          Firestore.instance.document('users/$tenantUid').updateData({
+            'rent': rentForTenantController.text,
+            'phoneNum': phoneNumController.text
+          });
+        });
+      }).then((_) {
+        updateDoc({
+          'userCount': FieldValue.arrayUnion([tenantUid])
+        }, 'users/${Injector
+            .get<UserDetails>(context: context)
+            .uid}');
+        Navigator.of(context).pop();
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: e);
+    }
   }
 }
