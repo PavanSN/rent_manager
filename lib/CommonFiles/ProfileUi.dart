@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:getflutter/components/avatar/gf_avatar.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+
 import '../Models/UserDetails.dart';
 import 'CommonWidgetsAndData.dart';
 
