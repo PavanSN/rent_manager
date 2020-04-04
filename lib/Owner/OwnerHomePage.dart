@@ -13,26 +13,30 @@ import 'package:line_icons/line_icons.dart';
 import 'package:share/share.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../Models/TabPressed.dart';
+import 'Subscription.dart';
 
 class CheckIfOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: Firestore.instance
-          .document('users/${Injector
-          .get<UserDetails>(context: context)
-          .uid}')
+          .document('users/${Injector.get<UserDetails>(context: context).uid}')
           .snapshots(),
       builder: (context, doc) {
+        print(doc.data['expDate'] );
+        print(DateTime.now().millisecondsSinceEpoch);
         try {
           bool isTenant = doc.data['isTenant'];
           if (isTenant == null) {
             return updateDoc({'isTenant': false},
-                'users/${Injector
-                    .get<UserDetails>(context: context)
-                    .uid}');
+                'users/${Injector.get<UserDetails>(context: context).uid}');
+          } else if (doc.data['expDate'] <=
+                  DateTime.now().millisecondsSinceEpoch &&
+              doc.data['userCount'].length != 0) {
+            return Subscription(
+              ownerDocRef: doc,
+            );
           } else {
             if (isTenant) {
               return ShowNotOwnerScreen();
@@ -96,14 +100,12 @@ class Owner extends StatelessWidget {
   }
 }
 
-List<Widget> actions(context) =>
-    [
+List<Widget> actions(context) => [
       IconButton(
         icon: Icon(Icons.share),
-        onPressed: () =>
-            Share.share(
-              'Hey guys, Now you can pay and manage rent using this free app https://play.google.com/store/apps/details?id=com.pavansn.rent_manager_tenant',
-            ),
+        onPressed: () => Share.share(
+          'Hey guys, Now you can pay and manage rent using this free app https://play.google.com/store/apps/details?id=com.pavansn.rent_manager_tenant',
+        ),
       ),
       IconButton(
         icon: Icon(
@@ -126,34 +128,31 @@ List<Widget> actions(context) =>
       ),
       IconButton(
         icon: Icon(LineIcons.wrench),
-        onPressed: () =>
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return Settings();
-                },
-              ),
-            ),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return Settings();
+            },
+          ),
+        ),
       ),
     ];
 
-leading(context) =>
-    IconButton(
-      icon: Icon(LineIcons.plus),
-      onPressed: () {
-        Firestore.instance
-            .document(
-            'users/${Injector
-                .get<UserDetails>(context: context)
-                .uid}')
-            .get()
-            .then((doc) {
-          String upiId = doc.data['upiId'];
-          return addTenant(context, upiId);
-        });
-      },
-    );
+leading(context) {
+  return IconButton(
+    icon: Icon(LineIcons.plus),
+    onPressed: () {
+      Firestore.instance
+          .document('users/${Injector.get<UserDetails>(context: context).uid}')
+          .get()
+          .then((doc) {
+        String upiId = doc.data['upiId'];
+        return addTenant(context, upiId);
+      });
+    },
+  );
+}
 
 class OwnerBody extends StatelessWidget {
   @override
@@ -181,15 +180,11 @@ class BuildingsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream:
-      streamDoc('users/${Injector
-          .get<UserDetails>(context: context)
-          .uid}'),
+          streamDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-          [Injector
-              .get<TabPressed>(context: context)
-              .buildingPressed];
+              [Injector.get<TabPressed>(context: context).buildingPressed];
           return DefaultTabController(
             length: ownerDoc.data['buildings'].length,
             child: GestureDetector(
@@ -241,9 +236,7 @@ class DeleteConfirmation extends StatelessWidget {
           onPressed: () async {
             List<String> buildingTenantsUIDs = [];
             String buildingName = ownerDoc.data['buildings']
-            [Injector
-                .get<TabPressed>(context: context)
-                .buildingPressed];
+                [Injector.get<TabPressed>(context: context).buildingPressed];
             for (DocumentReference doc in ownerDoc.data[buildingName]) {
               buildingTenantsUIDs.add(doc.documentID);
               doc.updateData({
@@ -254,9 +247,7 @@ class DeleteConfirmation extends StatelessWidget {
               'buildings': FieldValue.arrayRemove([buildingName]),
               buildingName: FieldValue.delete(),
               'userCount': FieldValue.arrayRemove(buildingTenantsUIDs),
-            }, 'users/${Injector
-                .get<UserDetails>(context: context)
-                .uid}');
+            }, 'users/${Injector.get<UserDetails>(context: context).uid}');
             Navigator.pop(context);
           },
         ),
@@ -286,15 +277,11 @@ class BuildingsData extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream:
-      streamDoc('users/${Injector
-          .get<UserDetails>(context: context)
-          .uid}'),
+          streamDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-          [Injector
-              .get<TabPressed>(context: context)
-              .buildingPressed];
+              [Injector.get<TabPressed>(context: context).buildingPressed];
           return ListView.builder(
             itemCount: ownerDoc.data[buildingName].length,
             itemBuilder: (context, index) {

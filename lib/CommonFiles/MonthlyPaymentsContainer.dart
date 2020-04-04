@@ -56,9 +56,7 @@ class MonthlyPayments extends StatelessWidget {
               return Expanded(
                 flex: 8,
                 child: MonthsWithPaymentTile(
-                  year: Injector
-                      .get<TabPressed>(context: context)
-                      .yearPressed,
+                  year: Injector.get<TabPressed>(context: context).yearPressed,
                   tenantDocRef: tenantDocRef,
                 ),
               );
@@ -81,9 +79,8 @@ class Tabs extends StatelessWidget {
       initialIndex: getTabs(accCreated).length - 1,
       length: getTabs(accCreated).length,
       child: TabBar(
-        onTap: (index) =>
-            Injector.get<TabPressed>(context: context).yearTapped(
-                accCreated + index),
+        onTap: (index) => Injector.get<TabPressed>(context: context)
+            .yearTapped(accCreated + index),
         labelStyle: TextStyle(
           fontWeight: FontWeight.w700,
         ),
@@ -176,7 +173,7 @@ class PayTile extends StatelessWidget {
           ),
           icon: StreamBuilder(
             stream:
-            streamDoc('users/${tenantDocRef.documentID}/payments/payments'),
+                streamDoc('users/${tenantDocRef.documentID}/payments/payments'),
             builder: (context, doc) {
               try {
                 return PayStatus(

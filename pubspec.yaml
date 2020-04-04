@@ -21,6 +21,7 @@ dependencies:
   google_sign_in:
   qrscan:
   share:
+  upi_india:
 
 dev_dependencies:
   flutter_test:

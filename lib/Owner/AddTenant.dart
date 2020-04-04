@@ -106,36 +106,39 @@ addTenantToBuildingUsingCam(BuildContext context) async {
     Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
   } else {
     String tenantUid = await scanner.scan();
-    Firestore.instance.document('users/$tenantUid').updateData(
-        {'homeId': Injector
-            .get<UserDetails>(context: context)
-            .uid}).then((_) {
-      Firestore.instance
-          .document('users/${Injector
-          .get<UserDetails>(context: context)
-          .uid}')
-          .updateData({
-        'buildings': FieldValue.arrayUnion([buildingNameController.text]),
-        buildingNameController.text: FieldValue.arrayUnion(
-            [Firestore.instance.document('users/$tenantUid')]),
-        'upiId': upiIdController.text
-      }).then((_) {
-        Firestore.instance
-            .document('users/$tenantUid/payments/payments')
-            .setData({});
-      }).then((_) {
+    Firestore.instance.document('users/$tenantUid').get().then((doc) {
+      if (doc.data['homeId'] == null) {
         Firestore.instance.document('users/$tenantUid').updateData({
-          'rent': rentForTenantController.text,
-          'phoneNum': phoneNumController.text
+          'homeId': Injector.get<UserDetails>(context: context).uid
+        }).then((_) {
+          Firestore.instance
+              .document(
+                  'users/${Injector.get<UserDetails>(context: context).uid}')
+              .updateData({
+            'buildings': FieldValue.arrayUnion([buildingNameController.text]),
+            buildingNameController.text: FieldValue.arrayUnion(
+                [Firestore.instance.document('users/$tenantUid')]),
+            'upiId': upiIdController.text
+          }).then((_) {
+            Firestore.instance
+                .document('users/$tenantUid/payments/payments')
+                .setData({});
+          }).then((_) {
+            Firestore.instance.document('users/$tenantUid').updateData({
+              'rent': rentForTenantController.text,
+              'phoneNum': phoneNumController.text
+            });
+          });
+        }).then((_) {
+          updateDoc({
+            'userCount': FieldValue.arrayUnion([tenantUid])
+          }, 'users/${Injector.get<UserDetails>(context: context).uid}');
+          Navigator.of(context).pop();
         });
-      });
-    }).then((_) {
-      updateDoc({
-        'userCount': FieldValue.arrayUnion([tenantUid])
-      }, 'users/${Injector
-          .get<UserDetails>(context: context)
-          .uid}');
-      Navigator.of(context).pop();
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Tenant\'s previous owner didnt delete the tenant... ');
+      }
     });
   }
 }
@@ -157,15 +160,11 @@ addTenantToBuildingUsingUID(BuildContext context) async {
     String tenantUid = UIDController.text;
     try {
       Firestore.instance.document('users/$tenantUid').updateData({
-        'homeId': Injector
-            .get<UserDetails>(context: context)
-            .uid
+        'homeId': Injector.get<UserDetails>(context: context).uid
       }).then((_) {
         Firestore.instance
             .document(
-            'users/${Injector
-                .get<UserDetails>(context: context)
-                .uid}')
+                'users/${Injector.get<UserDetails>(context: context).uid}')
             .updateData({
           'buildings': FieldValue.arrayUnion([buildingNameController.text]),
           buildingNameController.text: FieldValue.arrayUnion(
@@ -184,9 +183,7 @@ addTenantToBuildingUsingUID(BuildContext context) async {
       }).then((_) {
         updateDoc({
           'userCount': FieldValue.arrayUnion([tenantUid])
-        }, 'users/${Injector
-            .get<UserDetails>(context: context)
-            .uid}');
+        }, 'users/${Injector.get<UserDetails>(context: context).uid}');
         Navigator.of(context).pop();
       });
     } catch (e) {
