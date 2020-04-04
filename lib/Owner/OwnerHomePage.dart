@@ -24,8 +24,6 @@ class CheckIfOwner extends StatelessWidget {
           .document('users/${Injector.get<UserDetails>(context: context).uid}')
           .snapshots(),
       builder: (context, doc) {
-        print(doc.data['expDate'] );
-        print(DateTime.now().millisecondsSinceEpoch);
         try {
           bool isTenant = doc.data['isTenant'];
           if (isTenant == null) {
@@ -109,21 +107,11 @@ List<Widget> actions(context) => [
       ),
       IconButton(
         icon: Icon(
-          Icons.info,
+          Icons.ondemand_video,
           color: Colors.grey,
         ),
         onPressed: () {
-          bottomSheet(
-            context,
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Sometimes transaction confirmation fails, If tenant show's proof of transaction details then edit the rent (paid or unpaid) accordingly. Please Share this app with your tenants and real estate owners to manage business efficiently",
-                textAlign: TextAlign.center,
-              ),
-            ),
-            "Already Paid..?",
-          );
+          launch('https://www.youtube.com/watch?v=73xkbcf0d3U');
         },
       ),
       IconButton(
