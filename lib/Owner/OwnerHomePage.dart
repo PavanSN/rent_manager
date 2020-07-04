@@ -17,33 +17,36 @@ import 'Subscription.dart';
 class CheckIfOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: Firestore.instance
-          .document('users/${Injector.get<UserDetails>().uid}')
-          .snapshots(),
-      builder: (context, doc) {
-        try {
-          bool isTenant = doc.data['isTenant'];
-          if (isTenant == null) {
-            return updateDoc({'isTenant': false},
-                'users/${Injector.get<UserDetails>().uid}');
-          } else if (doc.data['expDate'] <=
-                  DateTime.now().millisecondsSinceEpoch &&
-              doc.data['userCount'].length != 0) {
-            return Subscription(
-              ownerDocRef: doc,
-            );
-          } else {
-            if (isTenant) {
-              return ShowNotOwnerScreen();
+    return StateBuilder(
+      observe: () => Injector.get<UserDetails>(),
+      builder: (context, _) => StreamBuilder(
+        stream: Firestore.instance
+            .document('users/${Injector.get<UserDetails>().uid}')
+            .snapshots(),
+        builder: (context, doc) {
+          try {
+            bool isTenant = doc.data['isTenant'];
+            if (isTenant == null) {
+              return updateDoc({'isTenant': false},
+                  'users/${Injector.get<UserDetails>().uid}');
+            } else if (doc.data['expDate'] <=
+                    DateTime.now().millisecondsSinceEpoch &&
+                doc.data['userCount'].length != 0) {
+              return Subscription(
+                ownerDocRef: doc,
+              );
             } else {
-              return Owner();
+              if (isTenant) {
+                return ShowNotOwnerScreen();
+              } else {
+                return Owner();
+              }
             }
+          } catch (e) {
+            return LoadingScreen();
           }
-        } catch (e) {
-          return LoadingScreen();
-        }
-      },
+        },
+      ),
     );
   }
 }
