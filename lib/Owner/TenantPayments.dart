@@ -28,7 +28,7 @@ class TenantPayments extends StatelessWidget {
         ],
         title: Text(
           "${tenantDoc.data['name']} (₹${tenantDoc.data['rent']})",
-          style: TextStyle(color: Colors.black),
+          style: Theme.of(context).textTheme.subtitle1,
         ),
         centerTitle: true,
       ),

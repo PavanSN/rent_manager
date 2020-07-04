@@ -1,9 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/Models/PayUsingUpi.dart';
-import 'package:home_manager/Models/UserDetails.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
 
 class PaymentMethods extends StatelessWidget {
@@ -29,7 +26,7 @@ class PaymentMethods extends StatelessWidget {
             LineIcons.google_wallet,
             color: Colors.blue,
           ),
-          app: UpiIndiaApps.GooglePay,
+          app: UpiApp.GooglePay,
         ),
         PaymentMethodTile(
           monthYear: monthYear,
@@ -41,7 +38,7 @@ class PaymentMethods extends StatelessWidget {
             LineIcons.paypal,
             color: Colors.deepPurpleAccent,
           ),
-          app: UpiIndiaApps.PhonePe,
+          app: UpiApp.PhonePe,
         ),
         PaymentMethodTile(
           monthYear: monthYear,
@@ -53,7 +50,7 @@ class PaymentMethods extends StatelessWidget {
             LineIcons.money,
             color: Colors.orange,
           ),
-          app: UpiIndiaApps.MiPay,
+          app: UpiApp.MiPay,
         ),
         PaymentMethodTile(
           monthYear: monthYear,
@@ -65,7 +62,7 @@ class PaymentMethods extends StatelessWidget {
             LineIcons.bank,
             color: Colors.lightBlueAccent,
           ),
-          app: UpiIndiaApps.PayTM,
+          app: UpiApp.PayTM,
         ),
         PaymentMethodTile(
           monthYear: monthYear,
@@ -77,7 +74,7 @@ class PaymentMethods extends StatelessWidget {
             LineIcons.amazon,
             color: Colors.black,
           ),
-          app: UpiIndiaApps.AmazonPay,
+          app: UpiApp.AmazonPay,
         ),
       ],
     );

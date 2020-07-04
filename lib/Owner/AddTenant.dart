@@ -109,11 +109,11 @@ addTenantToBuildingUsingCam(BuildContext context) async {
     Firestore.instance.document('users/$tenantUid').get().then((doc) {
       if (doc.data['homeId'] == null) {
         Firestore.instance.document('users/$tenantUid').updateData({
-          'homeId': Injector.get<UserDetails>(context: context).uid
+          'homeId': Injector.get<UserDetails>().uid
         }).then((_) {
           Firestore.instance
               .document(
-                  'users/${Injector.get<UserDetails>(context: context).uid}')
+                  'users/${Injector.get<UserDetails>().uid}')
               .updateData({
             'buildings': FieldValue.arrayUnion([buildingNameController.text]),
             buildingNameController.text: FieldValue.arrayUnion(
@@ -132,7 +132,7 @@ addTenantToBuildingUsingCam(BuildContext context) async {
         }).then((_) {
           updateDoc({
             'userCount': FieldValue.arrayUnion([tenantUid])
-          }, 'users/${Injector.get<UserDetails>(context: context).uid}');
+          }, 'users/${Injector.get<UserDetails>().uid}');
           Navigator.of(context).pop();
         });
       } else {
@@ -160,11 +160,11 @@ addTenantToBuildingUsingUID(BuildContext context) async {
     String tenantUid = UIDController.text;
     try {
       Firestore.instance.document('users/$tenantUid').updateData({
-        'homeId': Injector.get<UserDetails>(context: context).uid
+        'homeId': Injector.get<UserDetails>().uid
       }).then((_) {
         Firestore.instance
             .document(
-                'users/${Injector.get<UserDetails>(context: context).uid}')
+                'users/${Injector.get<UserDetails>().uid}')
             .updateData({
           'buildings': FieldValue.arrayUnion([buildingNameController.text]),
           buildingNameController.text: FieldValue.arrayUnion(
@@ -183,7 +183,7 @@ addTenantToBuildingUsingUID(BuildContext context) async {
       }).then((_) {
         updateDoc({
           'userCount': FieldValue.arrayUnion([tenantUid])
-        }, 'users/${Injector.get<UserDetails>(context: context).uid}');
+        }, 'users/${Injector.get<UserDetails>().uid}');
         Navigator.of(context).pop();
       });
     } catch (e) {

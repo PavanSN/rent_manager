@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-
 import 'CommonFiles/CommonWidgetsAndData.dart';
 import 'CommonFiles/SignInPage.dart';
 import 'Models/UserDetails.dart';

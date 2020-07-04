@@ -26,20 +26,20 @@ class PayUsingUpi {
   initTxn(app) async {
     UpiIndia upi;
 
-    upi = UpiIndia(
+    upi = UpiIndia();
+
+    return txnDetails(await upi.startTransaction(
       app: app,
       receiverUpiId: myUpiId,
       transactionNote: 'Subscription Fee',
       amount: amount,
       receiverName: 'To Owner',
-    );
-
-    return txnDetails(await upi.startTransaction());
+    ));
   }
 
   txnDetails(txn) {
     Fluttertoast.showToast(msg: txn);
-    var response = UpiIndiaResponse(txn);
+    var response = UpiResponse(txn);
     print(
         response.status + '=================================================');
     if (response.status == 'success' || response.status == 'SUCCESS') {

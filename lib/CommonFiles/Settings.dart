@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:getflutter/components/list_tile/gf_list_tile.dart';
-import 'package:getflutter/getflutter.dart';
+
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/Models/SignIn.dart';
 
@@ -26,17 +25,14 @@ class SettingsBody extends StatelessWidget {
     return ListView(
       scrollDirection: Axis.vertical,
       children: <Widget>[
-        GestureDetector(
+        ListTile(
           onTap: () =>
               bottomSheet(context, LogoutConfirmation(), 'Are you sure..?'),
-          child: GFListTile(
-            color: Colors.white,
-            avatar: Icon(
-              Icons.exit_to_app,
-              color: Colors.red,
-            ),
-            title: Text('Logout'),
+          leading: Icon(
+            Icons.exit_to_app,
+            color: Colors.red,
           ),
+          title: Text('Logout'),
         ),
       ],
     );
@@ -49,8 +45,8 @@ class LogoutConfirmation extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        GFButton(
-          text: 'Logout',
+        RaisedButton(
+          child: Text('Logout'),
           color: Colors.red,
           onPressed: () {
             Navigator.pop(context);
@@ -58,10 +54,10 @@ class LogoutConfirmation extends StatelessWidget {
             SignIn().signOut();
           },
         ),
-        GFButton(
+        RaisedButton(
           onPressed: () => Navigator.pop(context),
           color: Colors.green,
-          text: 'Go back..',
+          child: Text('Go back..'),
         )
       ],
     );

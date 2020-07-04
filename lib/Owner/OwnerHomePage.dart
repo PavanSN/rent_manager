@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:getflutter/components/button/gf_button.dart';
-import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/LoadingScreen.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
@@ -21,14 +19,14 @@ class CheckIfOwner extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: Firestore.instance
-          .document('users/${Injector.get<UserDetails>(context: context).uid}')
+          .document('users/${Injector.get<UserDetails>().uid}')
           .snapshots(),
       builder: (context, doc) {
         try {
           bool isTenant = doc.data['isTenant'];
           if (isTenant == null) {
             return updateDoc({'isTenant': false},
-                'users/${Injector.get<UserDetails>(context: context).uid}');
+                'users/${Injector.get<UserDetails>().uid}');
           } else if (doc.data['expDate'] <=
                   DateTime.now().millisecondsSinceEpoch &&
               doc.data['userCount'].length != 0) {
@@ -87,7 +85,7 @@ class Owner extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Owner',
-          style: TextStyle(color: Colors.black),
+          style: Theme.of(context).textTheme.subtitle1,
         ),
         centerTitle: true,
         leading: leading(context),
@@ -132,7 +130,7 @@ leading(context) {
     icon: Icon(LineIcons.plus),
     onPressed: () {
       Firestore.instance
-          .document('users/${Injector.get<UserDetails>(context: context).uid}')
+          .document('users/${Injector.get<UserDetails>().uid}')
           .get()
           .then((doc) {
         String upiId = doc.data['upiId'];
@@ -167,12 +165,11 @@ class BuildingsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream:
-          streamDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
+      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-              [Injector.get<TabPressed>(context: context).buildingPressed];
+              [Injector.get<TabPressed>().buildingPressed];
           return DefaultTabController(
             length: ownerDoc.data['buildings'].length,
             child: GestureDetector(
@@ -193,8 +190,7 @@ class BuildingsTab extends StatelessWidget {
                 isScrollable: true,
                 tabs: getTabs(ownerDoc),
                 onTap: (index) {
-                  Injector.get<TabPressed>(context: context)
-                      .buildingTapped(index);
+                  Injector.get<TabPressed>().buildingTapped(index);
                 },
               ),
             ),
@@ -218,13 +214,13 @@ class DeleteConfirmation extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        GFButton(
-          text: 'Delete building',
+        RaisedButton(
+          child: Text("Delete building"),
           color: Colors.red,
           onPressed: () async {
             List<String> buildingTenantsUIDs = [];
             String buildingName = ownerDoc.data['buildings']
-                [Injector.get<TabPressed>(context: context).buildingPressed];
+                [Injector.get<TabPressed>().buildingPressed];
             for (DocumentReference doc in ownerDoc.data[buildingName]) {
               buildingTenantsUIDs.add(doc.documentID);
               doc.updateData({
@@ -235,14 +231,14 @@ class DeleteConfirmation extends StatelessWidget {
               'buildings': FieldValue.arrayRemove([buildingName]),
               buildingName: FieldValue.delete(),
               'userCount': FieldValue.arrayRemove(buildingTenantsUIDs),
-            }, 'users/${Injector.get<UserDetails>(context: context).uid}');
+            }, 'users/${Injector.get<UserDetails>().uid}');
             Navigator.pop(context);
           },
         ),
-        GFButton(
+        RaisedButton(
           onPressed: () => Navigator.pop(context),
           color: Colors.green,
-          text: 'Go back..',
+          child: Text('Go back..'),
         ),
       ],
     );
@@ -264,12 +260,11 @@ class BuildingsData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream:
-          streamDoc('users/${Injector.get<UserDetails>(context: context).uid}'),
+      stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-              [Injector.get<TabPressed>(context: context).buildingPressed];
+              [Injector.get<TabPressed>().buildingPressed];
           return ListView.builder(
             itemCount: ownerDoc.data[buildingName].length,
             itemBuilder: (context, index) {
@@ -310,49 +305,42 @@ class TenantsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) {
-              return TenantPayments(
-                tenantDoc: tenantDoc,
-                isTenant: false,
+    return Card(
+      child: ListTile(
+        onLongPress: () {
+          bottomSheet(
+              context,
+              DeleteTenantPanel(
+                tenantBuildingName: tenantBuildingName,
                 tenantDocRef: tenantDocRef,
-              );
-            },
-          ),
-        );
-      },
-      child: Card(
-        child: GFListTile(
-          title: Text(name),
-          icon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  bottomSheet(
-                      context,
-                      DeleteTenantPanel(
-                        tenantBuildingName: tenantBuildingName,
-                        tenantDocRef: tenantDocRef,
-                      ),
-                      "Are you sure you want to remove this tenant..?");
-                },
               ),
-              IconButton(
-                icon: Icon(Icons.call, color: Colors.green),
-                onPressed: () {
-                  launch('tel://${tenantDoc.data['phoneNum'].toString()}');
-                },
-              ),
-            ],
-          ),
+              "Are you sure you want to remove this tenant..?");
+        },
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) {
+                return TenantPayments(
+                  tenantDoc: tenantDoc,
+                  isTenant: false,
+                  tenantDocRef: tenantDocRef,
+                );
+              },
+            ),
+          );
+        },
+        title: Text(name, style: Theme.of(context).textTheme.subtitle1),
+        leading: Icon(Icons.person, color: Colors.pink),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.call, color: Colors.green),
+              onPressed: () {
+                launch('tel://${tenantDoc.data['phoneNum'].toString()}');
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -370,9 +358,9 @@ class DeleteTenantPanel extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        GFButton(
+        RaisedButton(
           color: Colors.red,
-          text: "Delete",
+          child: Text("Delete"),
           onPressed: () {
             var tenantSide = {
               'homeId': null,
@@ -386,9 +374,9 @@ class DeleteTenantPanel extends StatelessWidget {
             myDoc().updateData(ownerSide);
           },
         ),
-        GFButton(
+        RaisedButton(
           color: Colors.green,
-          text: "Cancel",
+          child: Text("Cancel"),
           onPressed: () {
             Navigator.pop(context);
           },

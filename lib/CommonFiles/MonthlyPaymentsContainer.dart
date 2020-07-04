@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:getflutter/components/button/gf_button.dart';
-import 'package:getflutter/components/list_tile/gf_list_tile.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -51,12 +49,12 @@ class MonthlyPayments extends StatelessWidget {
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           StateBuilder(
-            models: [Injector.get<TabPressed>(context: context)],
+            observe: ()=>Injector.get<TabPressed>(),
             builder: (context, _) {
               return Expanded(
                 flex: 8,
                 child: MonthsWithPaymentTile(
-                  year: Injector.get<TabPressed>(context: context).yearPressed,
+                  year: Injector.get<TabPressed>().yearPressed,
                   tenantDocRef: tenantDocRef,
                 ),
               );
@@ -79,7 +77,7 @@ class Tabs extends StatelessWidget {
       initialIndex: getTabs(accCreated).length - 1,
       length: getTabs(accCreated).length,
       child: TabBar(
-        onTap: (index) => Injector.get<TabPressed>(context: context)
+        onTap: (index) => Injector.get<TabPressed>()
             .yearTapped(accCreated + index),
         labelStyle: TextStyle(
           fontWeight: FontWeight.w700,
@@ -154,38 +152,36 @@ class PayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String monthYear = month.toString() + year.toString();
-    return GestureDetector(
-      onTap: () {
-        bottomSheet(
-          context,
-          UpdatePayment(
-            tenantDocRef: tenantDocRef,
-            monthYear: monthYear,
-          ),
-          'Did Tenant pay rent on ${nameOfMonth(month)} $year',
-        );
-      },
-      child: Card(
-        child: GFListTile(
-          color: Colors.white,
-          title: Text(
-            '${nameOfMonth(month)} $year ${DateTime.now().month == month && DateTime.now().year == year ? '(This Month)' : ''}',
-          ),
-          icon: StreamBuilder(
-            stream:
-                streamDoc('users/${tenantDocRef.documentID}/payments/payments'),
-            builder: (context, doc) {
-              try {
-                return PayStatus(
-                  status: getStatus(month, year, doc),
-                  monthYear: monthYear,
-                  tenantDocRef: tenantDocRef,
-                );
-              } catch (e) {
-                return Text('Loading...');
-              }
-            },
-          ),
+    return Card(
+      child: ListTile(
+        onTap: () {
+          bottomSheet(
+            context,
+            UpdatePayment(
+              tenantDocRef: tenantDocRef,
+              monthYear: monthYear,
+            ),
+            'Did Tenant pay rent on ${nameOfMonth(month)} $year',
+          );
+        },
+        title: Text(
+          '${nameOfMonth(month)} $year ${DateTime.now().month == month && DateTime.now().year == year ? '(This Month)' : ''}',
+          style: Theme.of(context).textTheme.overline.copyWith(fontSize: 15),
+        ),
+        trailing: StreamBuilder(
+          stream:
+              streamDoc('users/${tenantDocRef.documentID}/payments/payments'),
+          builder: (context, doc) {
+            try {
+              return PayStatus(
+                status: getStatus(month, year, doc),
+                monthYear: monthYear,
+                tenantDocRef: tenantDocRef,
+              );
+            } catch (e) {
+              return Text('Loading...');
+            }
+          },
         ),
       ),
     );
@@ -203,7 +199,7 @@ class UpdatePayment extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        GFButton(
+        RaisedButton(
             child: Text('Paid'),
             color: Colors.green,
             onPressed: () {
@@ -216,7 +212,7 @@ class UpdatePayment extends StatelessWidget {
                 Navigator.pop(context);
               });
             }),
-        GFButton(
+        RaisedButton(
             child: Text('Not Paid'),
             color: Colors.red,
             onPressed: () {
