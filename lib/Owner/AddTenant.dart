@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/Models/UserDetails.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 TextEditingController buildingNameController = TextEditingController();
@@ -105,41 +104,6 @@ addTenantToBuildingUsingCam(BuildContext context) async {
   } else if (!upiIdController.text.contains('@')) {
     Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
   } else {
-    String tenantUid = await scanner.scan();
-    Firestore.instance.document('users/$tenantUid').get().then((doc) {
-      if (doc.data['homeId'] == null) {
-        Firestore.instance.document('users/$tenantUid').updateData({
-          'homeId': Injector.get<UserDetails>().uid
-        }).then((_) {
-          Firestore.instance
-              .document(
-                  'users/${Injector.get<UserDetails>().uid}')
-              .updateData({
-            'buildings': FieldValue.arrayUnion([buildingNameController.text]),
-            buildingNameController.text: FieldValue.arrayUnion(
-                [Firestore.instance.document('users/$tenantUid')]),
-            'upiId': upiIdController.text
-          }).then((_) {
-            Firestore.instance
-                .document('users/$tenantUid/payments/payments')
-                .setData({});
-          }).then((_) {
-            Firestore.instance.document('users/$tenantUid').updateData({
-              'rent': rentForTenantController.text,
-              'phoneNum': phoneNumController.text
-            });
-          });
-        }).then((_) {
-          updateDoc({
-            'userCount': FieldValue.arrayUnion([tenantUid])
-          }, 'users/${Injector.get<UserDetails>().uid}');
-          Navigator.of(context).pop();
-        });
-      } else {
-        Fluttertoast.showToast(
-            msg: 'Tenant\'s previous owner didnt delete the tenant... ');
-      }
-    });
   }
 }
 

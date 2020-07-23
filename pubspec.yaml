@@ -18,9 +18,11 @@ dependencies:
   cloud_firestore:
   firebase_auth:
   google_sign_in:
-  qrscan:
   share:
   upi_india:
+  bubble_bottom_bar:
+  intl_phone_number_input:
+  sms_autofill:
 
 dev_dependencies:
   flutter_test:

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../Models/SignIn.dart';
 
-class SignInPage extends StatelessWidget {
+class GoogleSignInPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +34,7 @@ class BodyForeGround extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Image.asset('assets/logo.png'),
+                  Image.asset('assets/logo.png',scale: 10,),
                   Text(
                     'Rent Manager (Owner)',
                     style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),

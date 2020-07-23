@@ -8,7 +8,6 @@ import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:share/share.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../Models/TabPressed.dart';
@@ -25,22 +24,14 @@ class CheckIfOwner extends StatelessWidget {
             .snapshots(),
         builder: (context, doc) {
           try {
-            bool isTenant = doc.data['isTenant'];
-            if (isTenant == null) {
-              return updateDoc({'isTenant': false},
-                  'users/${Injector.get<UserDetails>().uid}');
-            } else if (doc.data['expDate'] <=
+            if (doc.data['expDate'] <=
                     DateTime.now().millisecondsSinceEpoch &&
                 doc.data['userCount'].length != 0) {
               return Subscription(
                 ownerDocRef: doc,
               );
             } else {
-              if (isTenant) {
-                return ShowNotOwnerScreen();
-              } else {
-                return Owner();
-              }
+              return Owner();
             }
           } catch (e) {
             return LoadingScreen();
@@ -51,35 +42,7 @@ class CheckIfOwner extends StatelessWidget {
   }
 }
 
-class ShowNotOwnerScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Seems like you\'re the Tenant, Try to install Rent Manager (Tenant)',
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 25,
-            ),
-            RaisedButton(
-              color: Colors.green,
-              child: Text("Install Now"),
-              onPressed: () {
-                launch(
-                    'https://play.google.com/store/apps/details?id=com.pavansn.rent_manager_tenant');
-              },
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
+
 
 class Owner extends StatelessWidget {
   @override
@@ -94,25 +57,16 @@ class Owner extends StatelessWidget {
         leading: leading(context),
         actions: actions(context),
       ),
-      body: OwnerBody(),
+      body: UserProfile(),
     );
   }
 }
 
 List<Widget> actions(context) => [
       IconButton(
-        icon: Icon(Icons.share),
-        onPressed: () => Share.share(
-          'Hey guys, Now you can pay and manage rent using this free app https://play.google.com/store/apps/details?id=com.pavansn.rent_manager_tenant',
-        ),
-      ),
-      IconButton(
-        icon: Icon(
-          Icons.ondemand_video,
-          color: Colors.grey,
-        ),
+        icon: Icon(Icons.person),
         onPressed: () {
-          launch('https://www.youtube.com/watch?v=73xkbcf0d3U');
+          bottomSheet(context, UserProfile(), 'Profile');
         },
       ),
       IconButton(
@@ -143,14 +97,12 @@ leading(context) {
   );
 }
 
-class OwnerBody extends StatelessWidget {
+class UserProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        ProfileUi(
-          isOwner: true,
-        ),
+        ProfileUi(),
         Expanded(
           flex: 1,
           child: BuildingsTab(),

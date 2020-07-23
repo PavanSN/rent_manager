@@ -5,10 +5,6 @@ import '../Models/UserDetails.dart';
 import 'CommonWidgetsAndData.dart';
 
 class ProfileUi extends StatelessWidget {
-  final bool isOwner;
-
-  ProfileUi({this.isOwner});
-
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -19,10 +15,7 @@ class ProfileUi extends StatelessWidget {
           children: <Widget>[
             ProfilePhoto(),
             UserName(),
-            Visibility(
-              visible: isOwner,
-              child: UpiID(),
-            ),
+            UpiID(),
           ],
         ),
       ),

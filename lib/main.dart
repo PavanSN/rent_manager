@@ -1,10 +1,13 @@
+import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/TabPressed.dart';
+import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'CommonFiles/CommonWidgetsAndData.dart';
-import 'CommonFiles/SignInPage.dart';
+import 'CommonFiles/GoogleSignInPage.dart';
 import 'Models/UserDetails.dart';
 import 'Owner/OwnerHomePage.dart';
 
@@ -34,9 +37,54 @@ class RentManager extends StatelessWidget {
           home: StreamBuilder(
             stream: FirebaseAuth.instance.onAuthStateChanged,
             builder: (context, user) {
-              return user.hasData ? CheckIfOwner() : SignInPage();
+              return user.hasData ? MainPage() : GoogleSignInPage();
             },
           ),
+        );
+      },
+    );
+  }
+}
+
+class MainPage extends StatelessWidget {
+  List<BubbleBottomBarItem> tabs = [
+    BubbleBottomBarItem(
+      activeIcon: Icon(Icons.payment),
+      backgroundColor: Colors.deepPurple,
+      title: Text('Pay Rent'),
+      icon: Icon(Icons.payment, color: Colors.black),
+    ),
+    BubbleBottomBarItem(
+      activeIcon: Icon(Icons.account_balance_wallet),
+      backgroundColor: Colors.pink,
+      title: Text('Get Rent'),
+      icon: Icon(Icons.account_balance_wallet, color: Colors.black),
+    ),
+    BubbleBottomBarItem(
+      activeIcon: Icon(Icons.settings),
+      backgroundColor: Colors.blueGrey,
+      title: Text('Settings'),
+      icon: Icon(Icons.settings, color: Colors.black),
+    ),
+  ];
+  List body = [Tenant(), Owner(), Settings()];
+  int currIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Scaffold(
+          bottomNavigationBar: BubbleBottomBar(
+            inkColor: Colors.black,
+            items: tabs,
+            opacity: 0.2,
+            currentIndex: currIndex,
+            onTap: (index) => setState(() {
+              currIndex = index;
+            }),
+          ),
+          body: body[currIndex],
         );
       },
     );

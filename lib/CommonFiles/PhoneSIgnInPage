@@ -1,0 +1,121 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:rentcollector/CommonWidgetsAndData.dart';
+import 'package:sms_autofill/sms_autofill.dart';
+
+class PhoneNumVerificationUI extends StatelessWidget {
+  bool isVisible = false;
+  String btnTxt = 'Verify';
+  PhoneNumber phoneNo;
+  String verId;
+  bool btnVisible = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Center(
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 15),
+                  width: MediaQuery.of(context).size.width * 0.95,
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    elevation: 15,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Image.asset(
+                          'assets/logo.png',
+                          scale: 8,
+                        ),
+                        Text(
+                          'Rent Collector',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w300, fontSize: 20),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40),
+                          child: InternationalPhoneNumberInput(
+                            initialValue: PhoneNumber(
+                              phoneNumber: '',
+                              dialCode: '+91',
+                              isoCode: 'IN',
+                            ),
+                            hintText: "Phone Number",
+                            onInputChanged: (phone) => phoneNo = phone,
+                          ),
+                        ),
+                        Visibility(
+                          visible: isVisible,
+                          child: Padding(
+                            padding: EdgeInsets.all(30),
+                            child: PinFieldAutoFill(
+                              onCodeSubmitted: (otp) async {
+                                AuthCredential credential =
+                                PhoneAuthProvider.getCredential(
+                                    verificationId: verId, smsCode: otp);
+                                await FirebaseAuth.instance
+                                    .signInWithCredential(credential)
+                                    .then((value) => snackBar(
+                                    context, Text('Signing in...')));
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: btnVisible,
+                          child: RaisedButton(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            elevation: 10,
+                            onPressed: () => setState(() {
+                              isVisible = true;
+                              btnVisible = false;
+                              snackBar(context,
+                                  Text('OTP Sent, trying to read OTP'));
+                              FirebaseAuth.instance.verifyPhoneNumber(
+                                phoneNumber: phoneNo.phoneNumber,
+                                timeout: Duration(seconds: 60),
+                                verificationCompleted:
+                                    (AuthCredential credential) async {
+                                  await FirebaseAuth.instance
+                                      .signInWithCredential(credential);
+                                },
+                                verificationFailed: (error) {
+                                  snackBar(context, Text(error.message));
+                                },
+                                codeSent: (verificationId,
+                                    [forceResendingToken]) {
+                                  verId = verificationId;
+                                },
+                                codeAutoRetrievalTimeout:
+                                    (String verificationId) {},
+                              );
+                            }),
+                            color: Colors.red,
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Text(btnTxt),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
