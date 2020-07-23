@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:rentcollector/CommonWidgetsAndData.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
 class PhoneNumVerificationUI extends StatelessWidget {
@@ -59,12 +59,12 @@ class PhoneNumVerificationUI extends StatelessWidget {
                             child: PinFieldAutoFill(
                               onCodeSubmitted: (otp) async {
                                 AuthCredential credential =
-                                PhoneAuthProvider.getCredential(
-                                    verificationId: verId, smsCode: otp);
+                                    PhoneAuthProvider.getCredential(
+                                        verificationId: verId, smsCode: otp);
                                 await FirebaseAuth.instance
                                     .signInWithCredential(credential)
-                                    .then((value) => snackBar(
-                                    context, Text('Signing in...')));
+                                    .then((value) => Fluttertoast.showToast(
+                                        msg: 'Loading...'));
                               },
                             ),
                           ),
@@ -79,8 +79,8 @@ class PhoneNumVerificationUI extends StatelessWidget {
                             onPressed: () => setState(() {
                               isVisible = true;
                               btnVisible = false;
-                              snackBar(context,
-                                  Text('OTP Sent, trying to read OTP'));
+                              Fluttertoast.showToast(
+                                  msg: 'OTP Sent, trying to read OTP');
                               FirebaseAuth.instance.verifyPhoneNumber(
                                 phoneNumber: phoneNo.phoneNumber,
                                 timeout: Duration(seconds: 60),
@@ -90,7 +90,7 @@ class PhoneNumVerificationUI extends StatelessWidget {
                                       .signInWithCredential(credential);
                                 },
                                 verificationFailed: (error) {
-                                  snackBar(context, Text(error.message));
+                                  Fluttertoast.showToast(msg: error.message);
                                 },
                                 codeSent: (verificationId,
                                     [forceResendingToken]) {
