@@ -2,6 +2,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
+import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
@@ -32,10 +33,15 @@ class CheckSubscription extends StatelessWidget {
               );
             } else {
               BotToast.showSimpleNotification(title: 'Welcome Owner');
-              return Owner();
+              String phoneNum = Injector.get<UserDetails>().phoneNum;
+              return phoneNum == '' || phoneNum == null
+                  ? Center(child: PhoneNumVerificationUI())
+                  : Owner();
             }
           } catch (e) {
-            return Container();
+            return Container(
+              color: Colors.white,
+            );
           }
         },
       ),
@@ -46,10 +52,25 @@ class CheckSubscription extends StatelessWidget {
 class Owner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: UserProfile(),
+    return StreamBuilder(
+      stream: streamDoc('users/${Injector
+          .get<UserDetails>()
+          .uid}'),
+      builder: (context, snap) {
+        return Scaffold(
+          body: ListView(
+            children: <Widget>[NewTenantRequest(), TenantsData()],
+          ),
+        );
+      },
     );
+  }
+}
+
+class NewTenantRequest extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
 
@@ -58,7 +79,9 @@ leading(context) {
     icon: Icon(LineIcons.plus),
     onPressed: () {
       Firestore.instance
-          .document('users/${Injector.get<UserDetails>().uid}')
+          .document('users/${Injector
+          .get<UserDetails>()
+          .uid}')
           .get()
           .then((doc) {
         String upiId = doc.data['upiId'];
@@ -68,7 +91,7 @@ leading(context) {
   );
 }
 
-class UserProfile extends StatelessWidget {
+class TenantsData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(

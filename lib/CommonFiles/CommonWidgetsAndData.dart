@@ -60,7 +60,7 @@ class TextField extends StatelessWidget {
 }
 
 ThemeData theme = ThemeData(
-    scaffoldBackgroundColor: Color(0xFFF6F6F6),
+    scaffoldBackgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
       brightness: Brightness.light,
       color: Colors.transparent,

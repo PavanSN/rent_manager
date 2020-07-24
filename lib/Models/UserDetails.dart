@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
@@ -10,6 +11,7 @@ class UserDetails extends StatesRebuilder {
   int buildings = 0;
   double rent = 0;
   String phoneNum;
+  int tenantCount = 0;
 
   UserDetails() {
     getDetails();
@@ -24,6 +26,10 @@ class UserDetails extends StatesRebuilder {
       phoneNum = data.phoneNumber;
       BotToast.showSimpleNotification(title: 'Profile Updated');
       rebuildStates();
+      Firestore.instance.document('users/$uid').snapshots().listen((event) {
+        tenantCount = event.data['userCount'].length;
+        rebuildStates();
+      });
     });
   }
 }

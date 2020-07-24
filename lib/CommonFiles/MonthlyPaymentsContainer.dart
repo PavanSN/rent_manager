@@ -23,17 +23,6 @@ class MonthlyPayments extends StatelessWidget {
   Widget build(BuildContext context) {
     return Visibility(
       visible: didTenantGetHome,
-      replacement: Center(
-        child: Text(
-          'You need to tap on the qr button (Top Left) in order to register you as a tenant',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ),
       child: Column(
         children: <Widget>[
           Expanded(

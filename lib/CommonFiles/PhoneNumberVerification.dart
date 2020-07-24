@@ -42,6 +42,9 @@ class PhoneNumVerificationUI extends StatelessWidget {
                     phoneNumber: phoneNo.phoneNumber,
                     timeout: Duration(seconds: 60),
                     verificationCompleted: (AuthCredential credential) async {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                      Injector.get<UserDetails>().getDetails();
                       FirebaseAuth.instance.currentUser().then((value) {
                         value.updatePhoneNumberCredential(credential);
                         Firestore.instance

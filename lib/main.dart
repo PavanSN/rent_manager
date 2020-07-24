@@ -63,7 +63,7 @@ class MainPage extends StatelessWidget {
     ),
     BubbleBottomBarItem(
       activeIcon: Icon(Icons.account_balance_wallet),
-      backgroundColor: Colors.pink,
+      backgroundColor: Colors.deepOrange,
       title: Text('Get Rent'),
       icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
     ),
@@ -71,10 +71,10 @@ class MainPage extends StatelessWidget {
         icon: Icon(Icons.account_circle, color: Colors.grey),
         activeIcon: Icon(Icons.account_circle),
         title: Text('Profile'),
-        backgroundColor: Colors.blueGrey),
+        backgroundColor: Colors.purple),
     BubbleBottomBarItem(
       activeIcon: Icon(Icons.settings),
-      backgroundColor: Colors.blueGrey,
+      backgroundColor: Colors.green,
       title: Text('Settings'),
       icon: Icon(Icons.settings, color: Colors.grey),
     ),
@@ -95,7 +95,7 @@ class MainPage extends StatelessWidget {
             elevation: 0,
             inkColor: Colors.black,
             items: tabs,
-            opacity: 0,
+            opacity: 0.1,
             currentIndex: currIndex,
             onTap: (index) => setState(() {
               currIndex = index;

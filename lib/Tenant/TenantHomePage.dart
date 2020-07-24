@@ -15,7 +15,6 @@ class Tenant extends StatelessWidget {
   Widget build(BuildContext context) {
     BotToast.showSimpleNotification(title: 'Welcome Tenant');
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Body(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.deepPurple,
@@ -59,9 +58,9 @@ class Body extends StatelessWidget {
   }
 }
 
-class AddOwner extends StatelessWidget {
-  PhoneNumber phoneNo;
+PhoneNumber phoneNo;
 
+class AddOwner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -74,6 +73,15 @@ class AddOwner extends StatelessWidget {
         ),
         hintText: "Phone Number",
         onInputChanged: (phone) => phoneNo = phone,
+        onSubmit: () {
+          Firestore.instance
+              .collection('users')
+              .where('phoneNum', isEqualTo: phoneNo.toString())
+              .getDocuments()
+              .then((docs) {
+            var doc = docs.documents.elementAt(0);
+          });
+        },
       ),
     );
   }
