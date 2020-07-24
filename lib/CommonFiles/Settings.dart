@@ -10,13 +10,7 @@ class Settings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Settings',
-          style: TextStyle(color: Colors.black),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: Colors.white,
       body: SettingsBody(),
     );
   }
@@ -30,6 +24,7 @@ class SettingsBody extends StatelessWidget {
     return ListView(
       scrollDirection: Axis.vertical,
       children: <Widget>[
+        SizedBox(height: 20),
         ListTile(
           onTap: () {
             bottomSheet(

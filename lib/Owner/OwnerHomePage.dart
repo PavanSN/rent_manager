@@ -2,7 +2,6 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/CommonFiles/ProfileUi.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
@@ -39,7 +38,7 @@ class CheckSubscription extends StatelessWidget {
             return Container();
           }
         },
-          ),
+      ),
     );
   }
 }
@@ -48,28 +47,11 @@ class Owner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Owner',
-          style: Theme.of(context).textTheme.subtitle1,
-        ),
-        centerTitle: true,
-        leading: leading(context),
-        actions: actions(context),
-      ),
+      backgroundColor: Colors.white,
       body: UserProfile(),
     );
   }
 }
-
-List<Widget> actions(context) => [
-  IconButton(
-    icon: Icon(Icons.person),
-    onPressed: () {
-      bottomSheet(context, ProfileUi(), 'Profile');
-    },
-  ),
-];
 
 leading(context) {
   return IconButton(
@@ -112,7 +94,7 @@ class BuildingsTab extends StatelessWidget {
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-          [Injector.get<TabPressed>().buildingPressed];
+              [Injector.get<TabPressed>().buildingPressed];
           return DefaultTabController(
             length: ownerDoc.data['buildings'].length,
             child: GestureDetector(
@@ -163,7 +145,9 @@ class DeleteConfirmation extends StatelessWidget {
           onPressed: () async {
             List<String> buildingTenantsUIDs = [];
             String buildingName = ownerDoc.data['buildings']
-            [Injector.get<TabPressed>().buildingPressed];
+            [Injector
+                .get<TabPressed>()
+                .buildingPressed];
             for (DocumentReference doc in ownerDoc.data[buildingName]) {
               buildingTenantsUIDs.add(doc.documentID);
               doc.updateData({
@@ -207,7 +191,9 @@ class BuildingsData extends StatelessWidget {
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-          [Injector.get<TabPressed>().buildingPressed];
+          [Injector
+              .get<TabPressed>()
+              .buildingPressed];
           return ListView.builder(
             itemCount: ownerDoc.data[buildingName].length,
             itemBuilder: (context, index) {
@@ -243,7 +229,8 @@ class TenantsList extends StatelessWidget {
   final DocumentReference tenantDocRef;
   final tenantBuildingName;
 
-  TenantsList({this.tenantDoc, this.name, this.tenantDocRef, this.tenantBuildingName});
+  TenantsList(
+      {this.tenantDoc, this.name, this.tenantDocRef, this.tenantBuildingName});
 
   @override
   Widget build(BuildContext context) {

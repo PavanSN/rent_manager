@@ -10,8 +10,11 @@ import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonFiles/CommonWidgetsAndData.dart';
 import 'CommonFiles/GoogleSignInPage.dart';
+import 'CommonFiles/ProfileScreen.dart';
 import 'Models/UserDetails.dart';
 import 'Owner/OwnerHomePage.dart';
+
+int currIndex = 0;
 
 void main() {
   runApp(RentManager());
@@ -51,7 +54,7 @@ class RentManager extends StatelessWidget {
 }
 
 class MainPage extends StatelessWidget {
-  List<BubbleBottomBarItem> tabs = [
+  final List<BubbleBottomBarItem> tabs = [
     BubbleBottomBarItem(
       activeIcon: Icon(Icons.payment),
       backgroundColor: Colors.deepPurple,
@@ -65,14 +68,23 @@ class MainPage extends StatelessWidget {
       icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
     ),
     BubbleBottomBarItem(
+        icon: Icon(Icons.account_circle, color: Colors.grey),
+        activeIcon: Icon(Icons.account_circle),
+        title: Text('Profile'),
+        backgroundColor: Colors.blueGrey),
+    BubbleBottomBarItem(
       activeIcon: Icon(Icons.settings),
       backgroundColor: Colors.blueGrey,
       title: Text('Settings'),
       icon: Icon(Icons.settings, color: Colors.grey),
     ),
   ];
-  List body = [Tenant(), CheckSubscription(), Settings()];
-  int currIndex = 0;
+  final List body = [
+    Tenant(),
+    CheckSubscription(),
+    ProfileScreen(),
+    Settings()
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +92,10 @@ class MainPage extends StatelessWidget {
       builder: (context, setState) {
         return Scaffold(
           bottomNavigationBar: BubbleBottomBar(
+            elevation: 0,
             inkColor: Colors.black,
             items: tabs,
-            opacity: 0.2,
+            opacity: 0,
             currentIndex: currIndex,
             onTap: (index) => setState(() {
               currIndex = index;
