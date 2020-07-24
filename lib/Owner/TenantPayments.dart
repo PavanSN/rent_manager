@@ -1,7 +1,7 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 
@@ -79,14 +79,14 @@ class UpdateRent extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              child: TextField(
+              child: CustomTextField(
                 controller: rentAmountController,
-                decoration: InputDecoration(labelText: "Current Rent ₹${doc.data['rent']}"),
-                keyboardType: TextInputType.numberWithOptions(),
+                hintText: "Current Rent ₹${doc.data['rent']}",
                 onSubmitted: (amt) {
                   tenantDocRef.updateData({'rent': amt});
-                  Fluttertoast.showToast(msg: 'Rent amount for ${doc
-                      .data['name']} has changed to $amt');
+                  BotToast.showSimpleNotification(
+                      title:
+                          'Rent amount for ${doc.data['name']} has changed to $amt');
                   Navigator.pop(context);
                   Navigator.pop(context);
                 },
@@ -99,8 +99,8 @@ class UpdateRent extends StatelessWidget {
   }
 }
 
- getInitRentAmt(tenantDocRef){
-   tenantDocRef.get().then((doc) {
-     return doc.data['rent'].toString();
+getInitRentAmt(tenantDocRef){
+  tenantDocRef.get().then((doc) {
+    return doc.data['rent'].toString();
   });
 }

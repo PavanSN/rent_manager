@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+
 import 'CommonFiles/CommonWidgetsAndData.dart';
 import 'CommonFiles/GoogleSignInPage.dart';
 import 'Models/UserDetails.dart';
@@ -34,6 +36,8 @@ class RentManager extends StatelessWidget {
       builder: (context) {
         return MaterialApp(
           theme: theme,
+          builder: BotToastInit(),
+          navigatorObservers: [BotToastNavigatorObserver()],
           home: StreamBuilder(
             stream: FirebaseAuth.instance.onAuthStateChanged,
             builder: (context, user) {
@@ -52,22 +56,22 @@ class MainPage extends StatelessWidget {
       activeIcon: Icon(Icons.payment),
       backgroundColor: Colors.deepPurple,
       title: Text('Pay Rent'),
-      icon: Icon(Icons.payment, color: Colors.black),
+      icon: Icon(Icons.payment, color: Colors.grey),
     ),
     BubbleBottomBarItem(
       activeIcon: Icon(Icons.account_balance_wallet),
       backgroundColor: Colors.pink,
       title: Text('Get Rent'),
-      icon: Icon(Icons.account_balance_wallet, color: Colors.black),
+      icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
     ),
     BubbleBottomBarItem(
       activeIcon: Icon(Icons.settings),
       backgroundColor: Colors.blueGrey,
       title: Text('Settings'),
-      icon: Icon(Icons.settings, color: Colors.black),
+      icon: Icon(Icons.settings, color: Colors.grey),
     ),
   ];
-  List body = [Tenant(), Owner(), Settings()];
+  List body = [Tenant(), CheckSubscription(), Settings()];
   int currIndex = 0;
 
   @override

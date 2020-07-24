@@ -1,19 +1,19 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/CommonFiles/LoadingScreen.dart';
 import 'package:home_manager/CommonFiles/ProfileUi.dart';
-import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/AddTenant.dart';
 import 'package:home_manager/Owner/TenantPayments.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../Models/TabPressed.dart';
 import 'Subscription.dart';
 
-class CheckIfOwner extends StatelessWidget {
+class CheckSubscription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StateBuilder(
@@ -24,25 +24,25 @@ class CheckIfOwner extends StatelessWidget {
             .snapshots(),
         builder: (context, doc) {
           try {
-            if (doc.data['expDate'] <=
-                    DateTime.now().millisecondsSinceEpoch &&
+            if (doc.data['expDate'] <= DateTime.now().millisecondsSinceEpoch &&
                 doc.data['userCount'].length != 0) {
+              BotToast.showSimpleNotification(
+                  title: 'You subscription has ended...');
               return Subscription(
                 ownerDocRef: doc,
               );
             } else {
+              BotToast.showSimpleNotification(title: 'Welcome Owner');
               return Owner();
             }
           } catch (e) {
-            return LoadingScreen();
+            return Container();
           }
         },
-      ),
+          ),
     );
   }
 }
-
-
 
 class Owner extends StatelessWidget {
   @override
@@ -63,24 +63,13 @@ class Owner extends StatelessWidget {
 }
 
 List<Widget> actions(context) => [
-      IconButton(
-        icon: Icon(Icons.person),
-        onPressed: () {
-          bottomSheet(context, UserProfile(), 'Profile');
-        },
-      ),
-      IconButton(
-        icon: Icon(LineIcons.wrench),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return Settings();
-            },
-          ),
-        ),
-      ),
-    ];
+  IconButton(
+    icon: Icon(Icons.person),
+    onPressed: () {
+      bottomSheet(context, ProfileUi(), 'Profile');
+    },
+  ),
+];
 
 leading(context) {
   return IconButton(
@@ -102,7 +91,6 @@ class UserProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        ProfileUi(),
         Expanded(
           flex: 1,
           child: BuildingsTab(),
@@ -124,7 +112,7 @@ class BuildingsTab extends StatelessWidget {
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-              [Injector.get<TabPressed>().buildingPressed];
+          [Injector.get<TabPressed>().buildingPressed];
           return DefaultTabController(
             length: ownerDoc.data['buildings'].length,
             child: GestureDetector(
@@ -175,7 +163,7 @@ class DeleteConfirmation extends StatelessWidget {
           onPressed: () async {
             List<String> buildingTenantsUIDs = [];
             String buildingName = ownerDoc.data['buildings']
-                [Injector.get<TabPressed>().buildingPressed];
+            [Injector.get<TabPressed>().buildingPressed];
             for (DocumentReference doc in ownerDoc.data[buildingName]) {
               buildingTenantsUIDs.add(doc.documentID);
               doc.updateData({
@@ -219,7 +207,7 @@ class BuildingsData extends StatelessWidget {
       builder: (context, ownerDoc) {
         try {
           String buildingName = ownerDoc.data['buildings']
-              [Injector.get<TabPressed>().buildingPressed];
+          [Injector.get<TabPressed>().buildingPressed];
           return ListView.builder(
             itemCount: ownerDoc.data[buildingName].length,
             itemBuilder: (context, index) {
@@ -255,8 +243,7 @@ class TenantsList extends StatelessWidget {
   final DocumentReference tenantDocRef;
   final tenantBuildingName;
 
-  TenantsList(
-      {this.tenantDoc, this.name, this.tenantDocRef, this.tenantBuildingName});
+  TenantsList({this.tenantDoc, this.name, this.tenantDocRef, this.tenantBuildingName});
 
   @override
   Widget build(BuildContext context) {

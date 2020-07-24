@@ -17,9 +17,47 @@ Future<DocumentSnapshot> futureDoc(path) =>
     Firestore.instance.document(path).get();
 
 DocumentReference myDoc() =>
-    Firestore.instance.document('users/${Injector
-        .get<UserDetails>()
-        .uid}');
+    Firestore.instance.document('users/${Injector.get<UserDetails>().uid}');
+
+class CustomTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final enabled;
+  final hintText;
+  final validator;
+  final onSubmitted;
+
+  CustomTextField(
+      {this.controller,
+      this.enabled,
+      this.hintText,
+      this.validator,
+      this.onSubmitted});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(15),
+      child: TextFormField(
+        onFieldSubmitted: onSubmitted,
+        initialValue: '',
+        controller: controller,
+        enabled: enabled,
+        autovalidate: true,
+        decoration: InputDecoration(
+          hintText: hintText,
+          border: OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
+}
+
+class TextField extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
 
 ThemeData theme = ThemeData(
     scaffoldBackgroundColor: Color(0xFFF6F6F6),

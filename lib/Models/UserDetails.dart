@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
@@ -8,6 +9,7 @@ class UserDetails extends StatesRebuilder {
   String email = '';
   int buildings = 0;
   double rent = 0;
+  String phoneNum;
 
   UserDetails() {
     getDetails();
@@ -19,6 +21,8 @@ class UserDetails extends StatesRebuilder {
       photoUrl = data.photoUrl;
       uid = data.uid;
       email = data.email;
+      phoneNum = data.phoneNumber;
+      BotToast.showSimpleNotification(title: 'Profile Updated');
       rebuildStates();
     });
   }

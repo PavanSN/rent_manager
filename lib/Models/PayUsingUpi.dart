@@ -1,5 +1,5 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
@@ -38,7 +38,7 @@ class PayUsingUpi {
   }
 
   txnDetails(txn) {
-    Fluttertoast.showToast(msg: txn);
+    BotToast.showSimpleNotification(title: txn);
     var response = UpiResponse(txn);
     print(
         response.status + '=================================================');

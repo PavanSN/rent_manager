@@ -72,7 +72,7 @@ class UserName extends StatelessWidget {
           'Hello, ${Injector.get<UserDetails>().name}',
           style: Theme.of(context)
               .textTheme
-              .subtitle1
+              .headline6
               .copyWith(fontWeight: FontWeight.w300),
         );
       },

@@ -1,6 +1,6 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -18,32 +18,32 @@ addTenant(context, upiId) {
     Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        TextInput(
-          labelText: 'Enter your building name (Case Sensitive)',
-          controller: buildingNameController,
-        ),
-        TextInput(
-          keyboardType: TextInputType.numberWithOptions(
-            signed: true,
-          ),
-          labelText: 'Rent to be given by the tenant',
-          controller: rentForTenantController,
-        ),
-        TextInput(
-          labelText: 'Enter your UPI ID',
-          controller: upiIdController,
-        ),
-        TextInput(
-          labelText: 'Enter tenant phone Num',
-          controller: phoneNumController,
-          keyboardType: TextInputType.numberWithOptions(
-            signed: true,
-          ),
-        ),
-        TextInput(
-          labelText: 'Tenant UID (Enter UID / Use Camera)',
-          controller: UIDController,
-        ),
+//        CustomTextInput(
+//          labelText: 'Enter your building name (Case Sensitive)',
+//          controller: buildingNameController,
+//        ),
+//        TextInput(
+//          keyboardType: TextInputType.numberWithOptions(
+//            signed: true,
+//          ),
+//          labelText: 'Rent to be given by the tenant',
+//          controller: rentForTenantController,
+//        ),
+//        TextInput(
+//          labelText: 'Enter your UPI ID',
+//          controller: upiIdController,
+//        ),
+//        TextInput(
+//          labelText: 'Enter tenant phone Num',
+//          controller: phoneNumController,
+//          keyboardType: TextInputType.numberWithOptions(
+//            signed: true,
+//          ),
+//        ),
+//        TextInput(
+//          labelText: 'Tenant UID (Enter UID / Use Camera)',
+//          controller: UIDController,
+//        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
@@ -65,28 +65,6 @@ addTenant(context, upiId) {
   );
 }
 
-class TextInput extends StatelessWidget {
-  final controller;
-  final labelText;
-  final keyboardType;
-
-  TextInput({this.labelText, this.controller, this.keyboardType});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 15),
-      child: TextField(
-        keyboardType: keyboardType,
-        controller: controller,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          labelText: labelText,
-        ),
-      ),
-    );
-  }
-}
 
 String excludedWords =
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#\$%^&*()_+-/*';
@@ -99,12 +77,11 @@ addTenantToBuildingUsingCam(BuildContext context) async {
       phoneNumController.text.isEmpty ||
       phoneNumController.text.contains(excludedWords) ||
       !upiIdController.text.contains('@')) {
-    Fluttertoast.showToast(
-        msg: 'Please fill up the fields with appropriate details');
+    BotToast.showSimpleNotification(
+        title: 'Please fill up the fields with appropriate details');
   } else if (!upiIdController.text.contains('@')) {
-    Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
-  } else {
-  }
+    BotToast.showSimpleNotification(title: 'Please enter a valid UPI ID');
+  } else {}
 }
 
 addTenantToBuildingUsingUID(BuildContext context) async {
@@ -116,10 +93,10 @@ addTenantToBuildingUsingUID(BuildContext context) async {
       phoneNumController.text.contains(excludedWords) ||
       !upiIdController.text.contains('@') ||
       UIDController.text.isEmpty) {
-    Fluttertoast.showToast(
-        msg: 'Please fill up the fields with appropriate details');
+    BotToast.showSimpleNotification(
+        title: 'Please fill up the fields with appropriate details');
   } else if (!upiIdController.text.contains('@')) {
-    Fluttertoast.showToast(msg: 'Please enter a valid UPI ID');
+    BotToast.showSimpleNotification(title: 'Please enter a valid UPI ID');
   } else {
     String tenantUid = UIDController.text;
     try {
@@ -128,7 +105,7 @@ addTenantToBuildingUsingUID(BuildContext context) async {
       }).then((_) {
         Firestore.instance
             .document(
-                'users/${Injector.get<UserDetails>().uid}')
+            'users/${Injector.get<UserDetails>().uid}')
             .updateData({
           'buildings': FieldValue.arrayUnion([buildingNameController.text]),
           buildingNameController.text: FieldValue.arrayUnion(
@@ -151,7 +128,7 @@ addTenantToBuildingUsingUID(BuildContext context) async {
         Navigator.of(context).pop();
       });
     } catch (e) {
-      Fluttertoast.showToast(msg: e);
+      BotToast.showSimpleNotification(title: e.toString());
     }
   }
 }

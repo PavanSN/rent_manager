@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 
 import '../Models/SignIn.dart';
@@ -34,9 +35,12 @@ class BodyForeGround extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Image.asset('assets/logo.png',scale: 10,),
+                  Image.asset(
+                    'assets/logo.png',
+                    scale: 10,
+                  ),
                   Text(
-                    'Rent Manager (Owner)',
+                    'Rent Manager',
                     style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),
                   ),
                   SignInBtn(),
@@ -56,7 +60,10 @@ class SignInBtn extends StatelessWidget {
     return RaisedButton(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       elevation: 10,
-      onPressed: () => SignIn().signIn(),
+      onPressed: () {
+        SignIn().signIn();
+        BotToast.showSimpleNotification(title: 'Welcome to Rent Manager');
+      },
       color: Colors.white,
       child: Padding(
         padding: EdgeInsets.all(10.0),
