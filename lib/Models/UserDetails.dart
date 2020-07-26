@@ -25,11 +25,9 @@ class UserDetails extends StatesRebuilder {
       email = data.email;
       phoneNum = data.phoneNumber;
       BotToast.showSimpleNotification(title: 'Profile Updated');
-      rebuildStates();
-      Firestore.instance.document('users/$uid').snapshots().listen((event) {
-        tenantCount = event.data['userCount'].length;
-        rebuildStates();
-      });
+      Firestore.instance
+          .document('users/$uid')
+          .updateData({'photoUrl': photoUrl});
     });
   }
 }

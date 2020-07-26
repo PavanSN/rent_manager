@@ -10,11 +10,16 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        children: <Widget>[ProfileUi(), TenantCountUi()],
+        children: <Widget>[
+          ProfileUi(),
+          TenantCountUi(),
+        ],
       ),
     );
   }
 }
+
+
 
 class TenantCountUi extends StatelessWidget {
   @override
@@ -77,9 +82,7 @@ class PhoneNum extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Injector.get<UserDetails>().getDetails();
-    return Text('Phone No : ${Injector
-        .get<UserDetails>()
-        .phoneNum}');
+    return Text('Phone No : ${Injector.get<UserDetails>().phoneNum}');
   }
 }
 
@@ -92,12 +95,10 @@ class ProfilePhoto extends StatelessWidget {
         return Material(
           elevation: 15,
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
           child: CircleAvatar(
             backgroundColor: Colors.transparent,
-            backgroundImage: NetworkImage(Injector
-                .get<UserDetails>()
-                .photoUrl),
+            backgroundImage: NetworkImage(Injector.get<UserDetails>().photoUrl),
           ),
         );
       },
@@ -118,9 +119,7 @@ class UpiID extends StatelessWidget {
               onSubmitted: (upiId) {
                 if (upiId.toString().contains('@')) {
                   updateDoc({'upiId': upiId},
-                      'users/${Injector
-                          .get<UserDetails>()
-                          .uid}');
+                      'users/${Injector.get<UserDetails>().uid}');
                   BotToast.showSimpleNotification(
                       title: 'UPI Updated successfully');
                   Navigator.pop(context);
@@ -131,9 +130,7 @@ class UpiID extends StatelessWidget {
             'Update UPI');
       },
       child: StreamBuilder(
-        stream: streamDoc('users/${Injector
-            .get<UserDetails>()
-            .uid}'),
+        stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
         builder: (context, userDoc) {
           try {
             return Text(

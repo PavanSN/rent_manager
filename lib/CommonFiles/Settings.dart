@@ -15,9 +15,9 @@ class Settings extends StatelessWidget {
   }
 }
 
-class SettingsBody extends StatelessWidget {
-  TextEditingController upiIdController = TextEditingController();
+TextEditingController upiIdController = TextEditingController();
 
+class SettingsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -83,7 +83,6 @@ class LogoutConfirmation extends StatelessWidget {
           child: Text('Logout'),
           color: Colors.red,
           onPressed: () {
-            Navigator.pop(context);
             Navigator.pop(context);
             SignIn().signOut();
           },

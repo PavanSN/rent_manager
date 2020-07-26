@@ -13,16 +13,22 @@ import '../CommonFiles/CommonWidgetsAndData.dart';
 class Tenant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    String homeId;
+    myDoc().get().then((value) => homeId = value.data['homeId']);
     BotToast.showSimpleNotification(title: 'Welcome Tenant');
     return Scaffold(
       body: Body(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.deepPurple,
         onPressed: () {
-          String phoneNum = Injector.get<UserDetails>().phoneNum;
-          phoneNum == '' || phoneNum == null
-              ? bottomSheet(context, PhoneNumVerificationUI(), 'Verify Mobile')
-              : bottomSheet(context, AddOwner(), 'Enter Owner Phone Number');
+          if (homeId == null) {
+            String phoneNum = Injector.get<UserDetails>().phoneNum;
+            phoneNum == '' || phoneNum == null
+                ? bottomSheet(
+                    context, PhoneNumVerificationUI(), 'Verify Your Mobile')
+                : bottomSheet(context, AddOwner(), 'Enter Owner Phone Number');
+          } else
+            BotToast.showSimpleNotification(title: 'You already have an owner');
         },
         child: Icon(Icons.add),
       ),
@@ -38,15 +44,16 @@ class Body extends StatelessWidget {
       children: <Widget>[
         Expanded(
           child: StreamBuilder(
-            stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
-            builder: (context, userDoc) {
+            stream: myDoc().snapshots(),
+            builder: (context, myDoc) {
               try {
-                return MonthlyPayments(
-                  didTenantGetHome: userDoc.data['homeId'] != null,
-                  tenantDoc: userDoc,
-                  tenantDocRef: Firestore.instance
-                      .document('users/${Injector.get<UserDetails>().uid}'),
-                );
+                if (myDoc.data['homeId'] != null) {
+                  return MonthlyPayments(
+                    myDocSnap: myDoc,
+                  );
+                } else {
+                  return Container();
+                }
               } catch (e) {
                 return Container();
               }
@@ -74,13 +81,31 @@ class AddOwner extends StatelessWidget {
         hintText: "Phone Number",
         onInputChanged: (phone) => phoneNo = phone,
         onSubmit: () {
-          Firestore.instance
-              .collection('users')
-              .where('phoneNum', isEqualTo: phoneNo.toString())
-              .getDocuments()
-              .then((docs) {
-            var doc = docs.documents.elementAt(0);
-          });
+          if (phoneNo.phoneNumber == Injector.get<UserDetails>().phoneNum) {
+            BotToast.showSimpleNotification(
+                title: 'You cannot enter your phone number');
+            Navigator.of(context).pop();
+          } else {
+            Firestore.instance
+                .collection('users')
+                .where('phoneNum', isEqualTo: phoneNo.toString())
+                .getDocuments()
+                .then((docs) {
+              if (docs.documents.length != 0) {
+                var doc = docs.documents.elementAt(0).reference;
+                doc.updateData({
+                  'requests':
+                      FieldValue.arrayUnion([Injector.get<UserDetails>().uid])
+                });
+                BotToast.showSimpleNotification(
+                    title: 'Waiting for owner to accept your request');
+                Navigator.pop(context);
+              } else {
+                BotToast.showSimpleNotification(
+                    title: 'Owner\'s phone isn\'t registered');
+              }
+            });
+          }
         },
       ),
     );

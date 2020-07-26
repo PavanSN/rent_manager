@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/Models/TabPressed.dart';
@@ -5,52 +6,41 @@ import 'package:line_icons/line_icons.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonWidgetsAndData.dart';
+import 'PaymentMethodsBtmSheet.dart';
 
 class MonthlyPayments extends StatelessWidget {
-  final bool didTenantGetHome;
-  final AsyncSnapshot tenantDoc;
-  final isTenant;
-  final DocumentReference tenantDocRef;
+  final AsyncSnapshot myDocSnap;
 
   MonthlyPayments({
-    this.didTenantGetHome,
-    this.tenantDoc,
-    this.isTenant,
-    this.tenantDocRef,
+    this.myDocSnap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Visibility(
-      visible: didTenantGetHome,
-      child: Column(
-        children: <Widget>[
-          Expanded(
-            child: Tabs(
-              accCreated: tenantDoc.data['accCreated'],
-            ),
+    return Column(
+      children: <Widget>[
+        Expanded(
+          flex: 2,
+          child: Tabs(
+            accCreated: myDocSnap.data['accCreated'],
           ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-          PayTile(
-            month: DateTime.now().month,
-            year: DateTime.now().year,
-            tenantDocRef: tenantDocRef,
-          ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-          StateBuilder(
-            observe: ()=>Injector.get<TabPressed>(),
-            builder: (context, _) {
-              return Expanded(
-                flex: 8,
-                child: MonthsWithPaymentTile(
-                  year: Injector.get<TabPressed>().yearPressed,
-                  tenantDocRef: tenantDocRef,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+        ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+        PayTile(
+          month: DateTime.now().month,
+          year: DateTime.now().year,
+        ),
+        StateBuilder(
+          observe: () => Injector.get<TabPressed>(),
+          builder: (context, _) {
+            return Expanded(
+              flex: 8,
+              child: MonthsWithPaymentTile(
+                  year: Injector.get<TabPressed>().yearPressed),
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -66,8 +56,8 @@ class Tabs extends StatelessWidget {
       initialIndex: getTabs(accCreated).length - 1,
       length: getTabs(accCreated).length,
       child: TabBar(
-        onTap: (index) => Injector.get<TabPressed>()
-            .yearTapped(accCreated + index),
+        onTap: (index) =>
+            Injector.get<TabPressed>().yearTapped(accCreated + index),
         labelStyle: TextStyle(
           fontWeight: FontWeight.w700,
         ),
@@ -110,9 +100,8 @@ List<Tab> getTabs(int accCreated) {
 
 class MonthsWithPaymentTile extends StatelessWidget {
   final int year;
-  final tenantDocRef;
 
-  MonthsWithPaymentTile({this.year, this.tenantDocRef});
+  MonthsWithPaymentTile({this.year});
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +111,6 @@ class MonthsWithPaymentTile extends StatelessWidget {
         return PayTile(
           month: index + 1,
           year: year,
-          tenantDocRef: tenantDocRef,
         );
       },
     );
@@ -134,38 +122,30 @@ class MonthsWithPaymentTile extends StatelessWidget {
 class PayTile extends StatelessWidget {
   final int month;
   final int year;
-  final DocumentReference tenantDocRef;
 
-  PayTile({this.month, this.year, this.tenantDocRef});
+  PayTile({this.month, this.year});
 
   @override
   Widget build(BuildContext context) {
     final String monthYear = month.toString() + year.toString();
     return Card(
+      elevation: 5,
       child: ListTile(
         onTap: () {
-          bottomSheet(
-            context,
-            UpdatePayment(
-              tenantDocRef: tenantDocRef,
-              monthYear: monthYear,
-            ),
-            'Did Tenant pay rent on ${nameOfMonth(month)} $year',
-          );
+          BotToast.showSimpleNotification(title: 'Tenant Cannot edit payments');
         },
         title: Text(
           '${nameOfMonth(month)} $year ${DateTime.now().month == month && DateTime.now().year == year ? '(This Month)' : ''}',
           style: Theme.of(context).textTheme.overline.copyWith(fontSize: 15),
         ),
         trailing: StreamBuilder(
-          stream:
-              streamDoc('users/${tenantDocRef.documentID}/payments/payments'),
+          stream: streamDoc('users/${myDoc().documentID}/payments/payments'),
           builder: (context, doc) {
             try {
               return PayStatus(
                 status: getStatus(month, year, doc),
                 monthYear: monthYear,
-                tenantDocRef: tenantDocRef,
+                myDocRef: myDoc(),
               );
             } catch (e) {
               return Text('Loading...');
@@ -177,11 +157,89 @@ class PayTile extends StatelessWidget {
   }
 }
 
-class UpdatePayment extends StatelessWidget {
+class PayStatus extends StatelessWidget {
+  final String status;
+  final String monthYear;
+  final DocumentReference myDocRef;
+
+  PayStatus({this.status, this.monthYear, this.myDocRef});
+
+  @override
+  Widget build(BuildContext context) {
+    if (status == 'paid') {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            LineIcons.check,
+            color: Colors.green,
+          ),
+        ],
+      );
+    } else if (status == 'unpaid') {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.05,
+          ),
+          PayButton(
+            monthYear: monthYear,
+            tenantDocRef: myDocRef,
+          ),
+        ],
+      );
+    }
+    return SizedBox();
+  }
+}
+
+class PayButton extends StatelessWidget {
+  final monthYear;
   final DocumentReference tenantDocRef;
+
+  PayButton({this.monthYear, this.tenantDocRef});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: tenantDocRef.snapshots(),
+      builder: (context, tenantDoc) {
+        try {
+          var rent = tenantDoc.data['rent'];
+          return Row(
+            children: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  bottomSheet(
+                    context,
+                    PaymentMethods(
+                      monthYear: monthYear,
+                      amount: double.parse(rent),
+                    ),
+                    'Pay Using',
+                  );
+                },
+                child: Text(
+                  'Pay ₹$rent',
+                ),
+                color: Colors.green,
+              ),
+            ],
+          );
+        } catch (e) {
+          print(e.toString() + 'in paybutton tenant');
+          return Text('Loading...');
+        }
+      },
+    );
+  }
+}
+
+class UpdatePayment extends StatelessWidget {
   final String monthYear;
 
-  UpdatePayment({this.tenantDocRef, this.monthYear});
+  UpdatePayment({this.monthYear});
 
   @override
   Widget build(BuildContext context) {
@@ -192,10 +250,7 @@ class UpdatePayment extends StatelessWidget {
             child: Text('Paid'),
             color: Colors.green,
             onPressed: () {
-              tenantDocRef
-                  .collection('payments')
-                  .document('payments')
-                  .updateData({
+              myDoc().collection('payments').document('payments').updateData({
                 monthYear: 'paid',
               }).then((_) {
                 Navigator.pop(context);
@@ -205,10 +260,7 @@ class UpdatePayment extends StatelessWidget {
             child: Text('Not Paid'),
             color: Colors.red,
             onPressed: () {
-              tenantDocRef
-                  .collection('payments')
-                  .document('payments')
-                  .updateData({
+              myDoc().collection('payments').document('payments').updateData({
                 monthYear: null,
               }).then((_) {
                 Navigator.pop(context);
@@ -233,41 +285,41 @@ getStatus(month, year, AsyncSnapshot paymentDoc) {
 
 //============================= Trailing icon button ========================//
 
-class PayStatus extends StatelessWidget {
-  final String status;
-  final String monthYear;
-  final DocumentReference tenantDocRef;
-
-  PayStatus({this.status, this.monthYear, this.tenantDocRef});
-
-  @override
-  Widget build(BuildContext context) {
-    if (status == 'paid') {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(
-            LineIcons.check,
-            color: Colors.green,
-          ),
-        ],
-      );
-    } else if (status == 'unpaid') {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.05,
-          ),
-          Icon(
-            Icons.close,
-            color: Colors.red,
-          ),
-        ],
-      );
-    }
-    return SizedBox();
-  }
-}
+//class PayStatus extends StatelessWidget {
+//  final String status;
+//  final String monthYear;
+//  final DocumentReference myDocRef;
+//
+//  PayStatus({this.status, this.monthYear, this.myDocRef});
+//
+//  @override
+//  Widget build(BuildContext context) {
+//    if (status == 'paid') {
+//      return Row(
+//        mainAxisSize: MainAxisSize.min,
+//        children: <Widget>[
+//          Icon(
+//            LineIcons.check,
+//            color: Colors.green,
+//          ),
+//        ],
+//      );
+//    } else if (status == 'unpaid') {
+//      return Row(
+//        mainAxisSize: MainAxisSize.min,
+//        children: <Widget>[
+//          SizedBox(
+//            width: MediaQuery.of(context).size.width * 0.05,
+//          ),
+//          Icon(
+//            Icons.close,
+//            color: Colors.red,
+//          ),
+//        ],
+//      );
+//    }
+//    return SizedBox();
+//  }
+//}
 
 //============================= Trailing icon button ========================//

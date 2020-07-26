@@ -23,14 +23,12 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final enabled;
   final hintText;
-  final validator;
   final onSubmitted;
 
   CustomTextField(
       {this.controller,
       this.enabled,
       this.hintText,
-      this.validator,
       this.onSubmitted});
 
   @override
@@ -42,7 +40,6 @@ class CustomTextField extends StatelessWidget {
         initialValue: '',
         controller: controller,
         enabled: enabled,
-        autovalidate: true,
         decoration: InputDecoration(
           hintText: hintText,
           border: OutlineInputBorder(),

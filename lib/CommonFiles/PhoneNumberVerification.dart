@@ -1,7 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -47,10 +47,7 @@ class PhoneNumVerificationUI extends StatelessWidget {
                       Injector.get<UserDetails>().getDetails();
                       FirebaseAuth.instance.currentUser().then((value) {
                         value.updatePhoneNumberCredential(credential);
-                        Firestore.instance
-                            .document(
-                                'users/${Injector.get<UserDetails>().uid}')
-                            .updateData({'phoneNum': phoneNo.phoneNumber});
+                        myDoc().updateData({'phoneNum': phoneNo.phoneNumber});
                         BotToast.showSimpleNotification(
                             title: 'Phone verification successfully completed');
                       });
@@ -77,11 +74,8 @@ class PhoneNumVerificationUI extends StatelessWidget {
                                   value
                                       .updatePhoneNumberCredential(credential)
                                       .then((value) {
-                                    Firestore.instance
-                                        .document(
-                                            'users/${Injector.get<UserDetails>().uid}')
-                                        .updateData(
-                                            {'phoneNum': phoneNo.phoneNumber});
+                                    myDoc().updateData(
+                                        {'phoneNum': phoneNo.phoneNumber});
                                   });
                                   Injector.get<UserDetails>().getDetails();
                                   Navigator.pop(context);

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 
-
 class TenantPayments extends StatelessWidget {
   final AsyncSnapshot tenantDoc;
   final isTenant;
@@ -33,9 +32,7 @@ class TenantPayments extends StatelessWidget {
         centerTitle: true,
       ),
       body: MonthlyPayments(
-        tenantDoc: tenantDoc,
-        didTenantGetHome: true,
-        tenantDocRef: tenantDocRef,
+        myDocSnap: tenantDoc,
       ),
     );
   }
@@ -73,7 +70,7 @@ class UpdateRent extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: tenantDocRef.get(),
-      builder: (context,doc){
+      builder: (context, doc) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
@@ -99,7 +96,7 @@ class UpdateRent extends StatelessWidget {
   }
 }
 
-getInitRentAmt(tenantDocRef){
+getInitRentAmt(tenantDocRef) {
   tenantDocRef.get().then((doc) {
     return doc.data['rent'].toString();
   });
