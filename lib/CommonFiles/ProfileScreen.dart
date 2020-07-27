@@ -19,8 +19,6 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-
-
 class TenantCountUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -42,9 +40,18 @@ class TenantCountUi extends StatelessWidget {
               width: 0.5,
               color: Colors.black,
             ),
-            Text(
-              Injector.get<UserDetails>().tenantCount.toString(),
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),
+            FutureBuilder(
+              future: myDoc().get(),
+              builder: (context, snap) {
+                try {
+                  return Text(
+                    snap.data['userCount'].length.toString(),
+                    style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),
+                  );
+                } catch (e) {
+                  return Text('Loading');
+                }
+              },
             )
           ],
         ),
@@ -92,13 +99,12 @@ class ProfilePhoto extends StatelessWidget {
     return StateBuilder(
       observe: () => Injector.get<UserDetails>(),
       builder: (context, _) {
-        return Material(
-          elevation: 15,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-          child: CircleAvatar(
-            backgroundColor: Colors.transparent,
-            backgroundImage: NetworkImage(Injector.get<UserDetails>().photoUrl),
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(100),
+          child: Image.network(
+            Injector.get<UserDetails>().photoUrl,
+            height: 60,
+            width: 60,
           ),
         );
       },

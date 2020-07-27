@@ -31,9 +31,9 @@ class PayUsingUpi {
     return txnDetails(await upi.startTransaction(
       app: app,
       receiverUpiId: myUpiId,
-      transactionNote: 'Subscription Fee',
       amount: amount,
       receiverName: 'To Owner',
+      transactionNote: 'Payment using Rent Manager',
     ));
   }
 

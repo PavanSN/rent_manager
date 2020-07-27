@@ -7,31 +7,48 @@ import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../CommonFiles/CommonWidgetsAndData.dart';
+
+String homeId;
 
 class Tenant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    String homeId;
     myDoc().get().then((value) => homeId = value.data['homeId']);
     BotToast.showSimpleNotification(title: 'Welcome Tenant');
     return Scaffold(
-      body: Body(),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.deepPurple,
-        onPressed: () {
-          if (homeId == null) {
-            String phoneNum = Injector.get<UserDetails>().phoneNum;
-            phoneNum == '' || phoneNum == null
-                ? bottomSheet(
-                    context, PhoneNumVerificationUI(), 'Verify Your Mobile')
-                : bottomSheet(context, AddOwner(), 'Enter Owner Phone Number');
-          } else
-            BotToast.showSimpleNotification(title: 'You already have an owner');
-        },
-        child: Icon(Icons.add),
+      body: SafeArea(
+        child: Body(),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: homeId == null
+          ? FloatingActionButton(
+              tooltip: 'Call Owner',
+              backgroundColor: Colors.deepPurple,
+              onPressed: () {
+                String phoneNum = Injector.get<UserDetails>().phoneNum;
+                phoneNum == '' || phoneNum == null
+                    ? bottomSheet(
+                        context, PhoneNumVerificationUI(), 'Verify Your Mobile')
+                    : bottomSheet(
+                        context, AddOwner(), 'Enter Owner Phone Number');
+              },
+              child: Icon(Icons.add),
+            )
+          : FloatingActionButton(
+              backgroundColor: Colors.green,
+              child: Icon(
+                Icons.call,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Firestore.instance.document('users/$homeId').get().then(
+                      (snap) => launch('tel:${snap.data['phoneNum']}'),
+                    );
+              },
+            ),
     );
   }
 }
@@ -39,28 +56,22 @@ class Tenant extends StatelessWidget {
 class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
-        Expanded(
-          child: StreamBuilder(
-            stream: myDoc().snapshots(),
-            builder: (context, myDoc) {
-              try {
-                if (myDoc.data['homeId'] != null) {
-                  return MonthlyPayments(
-                    myDocSnap: myDoc,
-                  );
-                } else {
-                  return Container();
-                }
-              } catch (e) {
-                return Container();
-              }
-            },
-          ),
-        )
-      ],
+    return StreamBuilder(
+      stream: myDoc().snapshots(),
+      builder: (context, myDoc) {
+        try {
+          if (myDoc.data['homeId'] != null) {
+            return MonthlyPayments(
+                tenantSnap: myDoc,
+                isTenant: true,
+                rentAmnt: myDoc.data['rent']);
+          } else {
+            return Container();
+          }
+        } catch (e) {
+          return Container();
+        }
+      },
     );
   }
 }

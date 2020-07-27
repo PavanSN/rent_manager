@@ -24,17 +24,8 @@ class SettingsBody extends StatelessWidget {
       scrollDirection: Axis.vertical,
       children: <Widget>[
         SizedBox(height: 20),
-        ListTile(
-          onTap: () {
-            bottomSheet(
-                context, PhoneNumVerificationUI(), 'Update Phone Number');
-          },
-          leading: Icon(
-            Icons.call,
-            color: Colors.green,
-          ),
-          title: Text('Update Phone'),
-        ),
+        UpdatePhoneNumTile(),
+        UpdateUpiTile(),
         ListTile(
           onTap: () {
             bottomSheet(context, LogoutConfirmation(), 'Are you sure..?');
@@ -44,31 +35,53 @@ class SettingsBody extends StatelessWidget {
             color: Colors.red,
           ),
           title: Text('Logout'),
-        ),
-        ListTile(
-          leading: Icon(Icons.payment),
-          title: Text('Update UPI'),
-          onTap: () {
-            bottomSheet(
-                context,
-                CustomTextField(
-                  enabled: true,
-                  hintText: "UPI ID",
-                  onSubmitted: (upiId) {
-                    if (upiId.toString().contains('@')) {
-                      updateDoc({'upiId': upiId},
-                          'users/${Injector.get<UserDetails>().uid}');
-                      BotToast.showSimpleNotification(
-                          title: 'UPI Updated successfully');
-                      Navigator.pop(context);
-                    } else
-                      BotToast.showSimpleNotification(title: 'Invalid UPI ID');
-                  },
-                ),
-                'Update UPI');
-          },
         )
       ],
+    );
+  }
+}
+
+class UpdatePhoneNumTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        bottomSheet(context, PhoneNumVerificationUI(), 'Update Phone Number');
+      },
+      leading: Icon(
+        Icons.call,
+        color: Colors.green,
+      ),
+      title: Text('Update Phone'),
+    );
+  }
+}
+
+class UpdateUpiTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.payment),
+      title: Text('Update UPI'),
+      onTap: () {
+        bottomSheet(
+            context,
+            CustomTextField(
+              enabled: true,
+              hintText: "Your UPI ID",
+              onSubmitted: (upiId) {
+                if (upiId.toString().contains('@')) {
+                  updateDoc({'upiId': upiId},
+                      'users/${Injector.get<UserDetails>().uid}');
+                  BotToast.showSimpleNotification(
+                      title: 'UPI Updated successfully');
+                  Navigator.pop(context);
+                } else
+                  BotToast.showSimpleNotification(title: 'Invalid UPI ID');
+              },
+            ),
+            'Update UPI');
+      },
     );
   }
 }

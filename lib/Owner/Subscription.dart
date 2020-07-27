@@ -47,7 +47,6 @@ class SubscriptionOffers extends StatelessWidget {
                 context,
                 PaymentMethods(
                   monthYear: '${date.month}${date.year}',
-                  isTenant: false,
                   amount: amount.toDouble(),
                   expDate: DateTime.now()
                       .add(Duration(days: 30))

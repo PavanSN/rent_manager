@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
 import 'package:home_manager/CommonFiles/ProfileImageUpdater.dart';
+import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:home_manager/Owner/TenantList.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -30,11 +30,15 @@ class CheckSubscription extends StatelessWidget {
             } else if (doc.data['requests'].length != 0) {
               BotToast.showSimpleNotification(title: 'New Request');
               return Requests();
+            } else if (doc.data['upiId'] == null) {
+              return Center(child: UpdateUpiTile());
             } else {
               String phoneNum = doc.data['phoneNum'];
               return phoneNum != null
                   ? Owner()
-                  : Center(child: PhoneNumVerificationUI());
+                  : Center(
+                      child: UpdatePhoneNumTile(),
+                    );
             }
           } catch (e) {
             return Container();
@@ -172,11 +176,12 @@ class BuildingsTile extends StatelessWidget {
                 RaisedButton(
                   onPressed: () {
                     bottomSheet(
-                        context,
-                        TenantList(
-                          buildingName: buildingName,
-                        ),
-                        'Tenants in building : $buildingName');
+                      context,
+                      TenantList(
+                        buildingName: buildingName,
+                      ),
+                      'Tenants in building : $buildingName',
+                    );
                   },
                   color: Colors.green,
                   child: Text('View Tenants'),
@@ -196,13 +201,13 @@ class Requests extends StatelessWidget {
     return StreamBuilder(
       stream: myDoc().snapshots(),
       builder: (context, snap) {
-        if (snap.hasData && !snap.hasError) {
-          print(snap.data['requests'].length);
+        if (snap.hasData || !snap.hasError || snap.data['upiId'] == null) {
           return ListView.builder(
             itemCount: snap.data['requests'].length,
             itemBuilder: (context, index) {
               return NewTenantRequestCard(
-                  requesterUid: snap.data['requests'][index]);
+                requesterUid: snap.data['requests'][index],
+              );
             },
           );
         } else

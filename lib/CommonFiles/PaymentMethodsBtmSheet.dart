@@ -6,19 +6,18 @@ import 'package:upi_india/upi_india.dart';
 class PaymentMethods extends StatelessWidget {
   final double amount;
   final expDate;
-  final isTenant;
   final monthYear;
+  final isTenant;
 
-  PaymentMethods({this.amount, this.expDate, this.isTenant, this.monthYear});
+  PaymentMethods({this.amount, this.expDate, this.monthYear, this.isTenant});
 
   @override
   Widget build(BuildContext context) {
-    print(isTenant);
     return Column(
       children: <Widget>[
         PaymentMethodTile(
-          monthYear: monthYear,
           isTenant: isTenant,
+          monthYear: monthYear,
           amount: amount,
           expDate: expDate,
           title: 'GooglePay',
@@ -29,8 +28,8 @@ class PaymentMethods extends StatelessWidget {
           app: UpiApp.GooglePay,
         ),
         PaymentMethodTile(
-          monthYear: monthYear,
           isTenant: isTenant,
+          monthYear: monthYear,
           amount: amount,
           expDate: expDate,
           title: 'PhonePe',
@@ -41,8 +40,8 @@ class PaymentMethods extends StatelessWidget {
           app: UpiApp.PhonePe,
         ),
         PaymentMethodTile(
-          monthYear: monthYear,
           isTenant: isTenant,
+          monthYear: monthYear,
           amount: amount,
           expDate: expDate,
           title: 'MiPay',
@@ -53,8 +52,8 @@ class PaymentMethods extends StatelessWidget {
           app: UpiApp.MiPay,
         ),
         PaymentMethodTile(
-          monthYear: monthYear,
           isTenant: isTenant,
+          monthYear: monthYear,
           amount: amount,
           expDate: expDate,
           title: 'PayTM',
@@ -65,8 +64,8 @@ class PaymentMethods extends StatelessWidget {
           app: UpiApp.PayTM,
         ),
         PaymentMethodTile(
-          monthYear: monthYear,
           isTenant: isTenant,
+          monthYear: monthYear,
           amount: amount,
           expDate: expDate,
           title: 'AmazonPay',
@@ -87,8 +86,8 @@ class PaymentMethodTile extends StatelessWidget {
   final Icon leadingIcon;
   final expDate;
   final app;
-  final isTenant;
   final monthYear;
+  final isTenant;
 
   PaymentMethodTile(
       {this.title,
@@ -96,22 +95,19 @@ class PaymentMethodTile extends StatelessWidget {
       this.amount,
       this.expDate,
       this.app,
-      this.isTenant,
-      this.monthYear});
+      this.monthYear,
+      this.isTenant});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (!isTenant) {
-          PayUsingUpi(
+        PayUsingUpi(
             monthYear: monthYear,
             app: app,
             amount: amount,
             expDate: expDate,
-            isTenant: isTenant,
-          );
-        }
+            isTenant: isTenant);
       },
       child: Card(
         child: ListTile(
@@ -134,8 +130,14 @@ class BeautifulCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.38,
-      width: MediaQuery.of(context).size.width * 0.8,
+      height: MediaQuery
+          .of(context)
+          .size
+          .height * 0.38,
+      width: MediaQuery
+          .of(context)
+          .size
+          .width * 0.8,
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         color: color,
