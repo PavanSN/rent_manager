@@ -168,7 +168,7 @@ class PayTile extends StatelessWidget {
                     onPressed: () {
                       Firestore.instance
                           .document(
-                          'users/${tenantSnap.data['uid']}/payments/payments')
+                              'users/${tenantSnap.data['uid']}/payments/payments')
                           .updateData({monthYear: monthYear});
                       Navigator.pop(context);
                     },
@@ -231,14 +231,22 @@ class PayButton extends StatelessWidget {
       builder: (context, doc) {
         try {
           var rent = doc.data['rent'];
+          var homeId = doc.data['homeId'];
+          var upiId;
+          Firestore.instance
+              .document('users/$homeId')
+              .get()
+              .then((value) => upiId = value.data['upiId']);
           return RaisedButton(
             onPressed: () {
+              print(upiId);
               bottomSheet(
                 context,
                 PaymentMethods(
                   monthYear: monthYear,
                   amount: double.parse(rent.toString()),
                   isTenant: isTenant,
+                  upiId: upiId,
                 ),
                 'Pay Using',
               );
@@ -250,7 +258,7 @@ class PayButton extends StatelessWidget {
           );
         } catch (e) {
           print(e.toString() + 'in paybutton tenant');
-          return Text('Loading...');
+          return Text('Waiting...');
         }
       },
     );

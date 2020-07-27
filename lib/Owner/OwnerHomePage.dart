@@ -201,17 +201,21 @@ class Requests extends StatelessWidget {
     return StreamBuilder(
       stream: myDoc().snapshots(),
       builder: (context, snap) {
-        if (snap.hasData || !snap.hasError || snap.data['upiId'] == null) {
-          return ListView.builder(
-            itemCount: snap.data['requests'].length,
-            itemBuilder: (context, index) {
-              return NewTenantRequestCard(
-                requesterUid: snap.data['requests'][index],
-              );
-            },
-          );
-        } else
+        try {
+          if (snap.hasData || !snap.hasError || snap.data['upiId'] == null) {
+            return ListView.builder(
+              itemCount: snap.data['requests'].length,
+              itemBuilder: (context, index) {
+                return NewTenantRequestCard(
+                  requesterUid: snap.data['requests'][index],
+                );
+              },
+            );
+          } else
+            return Container();
+        } catch (e) {
           return Container();
+        }
       },
     );
   }
@@ -312,7 +316,10 @@ onAccept(context, requesterUid) {
                   'userCount': FieldValue.arrayUnion([requesterUid]),
                   'buildingPhotos': {buildingName: null}
                 }).then((_) {
-                  updateDoc({'homeId': requesterUid}, 'users/$requesterUid');
+                  updateDoc(
+                    {'homeId': Injector.get<UserDetails>().uid},
+                    'users/$requesterUid',
+                  );
                   Navigator.pop(context);
                 });
               },
@@ -353,15 +360,4 @@ onAccept(context, requesterUid) {
         ),
         'Enter building name');
   });
-}
-
-getTabs(AsyncSnapshot ownerDoc) {
-  int buildingsLength = ownerDoc.data['buildings'].length;
-  List<Tab> tabs = [];
-  for (int i = 0; i < buildingsLength; i++) {
-    tabs.add(Tab(
-      text: ownerDoc.data['buildings'][i],
-    ));
-  }
-  return tabs;
 }

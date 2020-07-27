@@ -12,11 +12,20 @@ import 'package:url_launcher/url_launcher.dart';
 import '../CommonFiles/CommonWidgetsAndData.dart';
 
 String homeId;
+String phoneNum;
 
 class Tenant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     myDoc().get().then((value) => homeId = value.data['homeId']);
+
+    Firestore.instance.document('users/$homeId').get().then(
+      (snap) {
+        print(snap.data);
+        return phoneNum = snap.data['phoneNum'];
+      },
+    );
+
     BotToast.showSimpleNotification(title: 'Welcome Tenant');
     return Scaffold(
       body: SafeArea(
@@ -44,9 +53,7 @@ class Tenant extends StatelessWidget {
                 color: Colors.white,
               ),
               onPressed: () {
-                Firestore.instance.document('users/$homeId').get().then(
-                      (snap) => launch('tel:${snap.data['phoneNum']}'),
-                    );
+                launch('tel:$phoneNum');
               },
             ),
     );

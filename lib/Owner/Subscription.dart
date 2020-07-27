@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PaymentMethodsBtmSheet.dart';
@@ -9,6 +10,7 @@ class Subscription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    BotToast.showSimpleNotification(title: 'Your subscription was ended');
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -36,21 +38,32 @@ class SubscriptionOffers extends StatelessWidget {
       children: <Widget>[
         SubscriptionCard(
           amount: amount,
-          color: Colors.pink,
-          title: Text(
-            'Pay ₹10/Tenant per month',
-            style: TextStyle(color: Colors.white, fontSize: 25),
+          color: Colors.deepOrange,
+          title: Column(
+            children: <Widget>[
+              Text(
+                'Pay ₹10/Tenant per month',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Text(
+                'No of tenants = ${ownerDocRef.data['userCount'].length}',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
           ),
           onPressed: () {
             var date = DateTime.now();
             bottomSheet(
                 context,
                 PaymentMethods(
+                  isTenant: false,
+                  upiId: '9449182341@ybl',
                   monthYear: '${date.month}${date.year}',
                   amount: amount.toDouble(),
-                  expDate: DateTime.now()
-                      .add(Duration(days: 30))
-                      .millisecondsSinceEpoch,
+                  expDate: date.add(Duration(days: 30)).millisecondsSinceEpoch,
                 ),
                 'Pay Using');
           },

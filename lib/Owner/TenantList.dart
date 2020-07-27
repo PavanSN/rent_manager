@@ -21,7 +21,10 @@ class TenantList extends StatelessWidget {
             shrinkWrap: true,
             itemCount: tenantUids.length,
             itemBuilder: (context, index) {
-              return TenantTile(tenantUid: tenantUids[index]);
+              return TenantTile(
+                tenantUid: tenantUids[index],
+                buildingName: buildingName,
+              );
             },
           );
         } catch (e) {
@@ -72,11 +75,18 @@ class TenantTile extends StatelessWidget {
                 bottomSheet(
                   context,
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       RaisedButton(
                         child: Text('Delete'),
                         color: Colors.red,
                         onPressed: () {
+                          updateDoc({'homeId': null, 'rent': null},
+                              'users/$tenantUid');
+                          myDoc().updateData({
+                            buildingName: FieldValue.arrayRemove([tenantUid]),
+                            'userCount': FieldValue.arrayRemove([tenantUid]),
+                          });
                           Navigator.pop(context);
                         },
                       ),
@@ -84,14 +94,9 @@ class TenantTile extends StatelessWidget {
                         child: Text('Cancel'),
                         color: Colors.green,
                         onPressed: () {
-                          updateDoc(
-                              {'uid': null, 'rent': null}, 'users/$tenantUid');
-                          myDoc().updateData({
-                            buildingName: FieldValue.arrayRemove([tenantUid]),
-                            'userCount': FieldValue.arrayRemove([tenantUid]),
-                          });
+                          Navigator.pop(context);
                         },
-                      )
+                      ),
                     ],
                   ),
                   'Do you really want to delete ${tenantSnap.data['name']} from $buildingName',

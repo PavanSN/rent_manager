@@ -1,10 +1,9 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
-
-String myUpiId = 'pavansn2000@ybl';
 
 class PayUsingUpi {
   final double amount;
@@ -12,8 +11,10 @@ class PayUsingUpi {
   final bool isTenant;
   final int expDate;
   final String app;
+  final String upiId;
 
   PayUsingUpi({
+    this.upiId,
     this.amount,
     this.monthYear,
     this.expDate,
@@ -24,36 +25,38 @@ class PayUsingUpi {
   }
 
   initTxn(app) async {
-    UpiIndia upi;
-
-    upi = UpiIndia();
+    UpiIndia upi = UpiIndia();
 
     return txnDetails(await upi.startTransaction(
       app: app,
-      receiverUpiId: myUpiId,
+      receiverUpiId: upiId,
       amount: amount,
       receiverName: 'To Owner',
       transactionNote: 'Payment using Rent Manager',
     ));
   }
 
-  txnDetails(txn) {
-    BotToast.showSimpleNotification(title: txn);
-    var response = UpiResponse(txn);
-    print(
-        response.status + '=================================================');
-    if (response.status == 'success' || response.status == 'SUCCESS') {
-      handleSuccess(response.transactionId, monthYear, isTenant, expDate);
+  txnDetails(UpiResponse txn) {
+    BotToast.showSimpleNotification(title: txn.status);
+    if (txn.status == 'success' || txn.status == 'SUCCESS') {
+      handleSuccess(txn.transactionId, monthYear, isTenant, expDate);
+    } else {
+      BotToast.showSimpleNotification(title: txn.error);
     }
   }
 
-  handleSuccess(txnId, monthYear, isTenant, expDate) {
+  handleSuccess(String txnId, String monthYear, bool isTenant, int expDate) {
     print(monthYear);
-
-    Firestore.instance
-        .document('users/${Injector.get<UserDetails>().uid}')
-        .updateData({
-      'expDate': expDate,
-    });
+    if (isTenant) {
+      print('tenant successfully paid');
+      Firestore.instance
+          .document(
+              'users/${Injector.get<UserDetails>().uid}/payments/payments')
+          .updateData({monthYear: txnId});
+    } else {
+      myDoc().updateData({
+        'expDate': expDate,
+      });
+    }
   }
 }

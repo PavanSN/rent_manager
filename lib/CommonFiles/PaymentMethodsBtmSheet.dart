@@ -8,8 +8,10 @@ class PaymentMethods extends StatelessWidget {
   final expDate;
   final monthYear;
   final isTenant;
+  final upiId;
 
-  PaymentMethods({this.amount, this.expDate, this.monthYear, this.isTenant});
+  PaymentMethods(
+      {this.amount, this.expDate, this.monthYear, this.isTenant, this.upiId});
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,7 @@ class PaymentMethods extends StatelessWidget {
             color: Colors.blue,
           ),
           app: UpiApp.GooglePay,
+          upiId: upiId,
         ),
         PaymentMethodTile(
           isTenant: isTenant,
@@ -38,6 +41,7 @@ class PaymentMethods extends StatelessWidget {
             color: Colors.deepPurpleAccent,
           ),
           app: UpiApp.PhonePe,
+          upiId: upiId,
         ),
         PaymentMethodTile(
           isTenant: isTenant,
@@ -50,6 +54,7 @@ class PaymentMethods extends StatelessWidget {
             color: Colors.orange,
           ),
           app: UpiApp.MiPay,
+          upiId: upiId,
         ),
         PaymentMethodTile(
           isTenant: isTenant,
@@ -62,6 +67,7 @@ class PaymentMethods extends StatelessWidget {
             color: Colors.lightBlueAccent,
           ),
           app: UpiApp.PayTM,
+          upiId: upiId,
         ),
         PaymentMethodTile(
           isTenant: isTenant,
@@ -74,6 +80,7 @@ class PaymentMethods extends StatelessWidget {
             color: Colors.black,
           ),
           app: UpiApp.AmazonPay,
+          upiId: upiId,
         ),
       ],
     );
@@ -88,6 +95,7 @@ class PaymentMethodTile extends StatelessWidget {
   final app;
   final monthYear;
   final isTenant;
+  final upiId;
 
   PaymentMethodTile(
       {this.title,
@@ -96,13 +104,15 @@ class PaymentMethodTile extends StatelessWidget {
       this.expDate,
       this.app,
       this.monthYear,
-      this.isTenant});
+      this.isTenant,
+      this.upiId});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         PayUsingUpi(
+            upiId: upiId,
             monthYear: monthYear,
             app: app,
             amount: amount,
