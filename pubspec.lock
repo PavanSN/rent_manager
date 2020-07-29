@@ -35,7 +35,7 @@ packages:
       name: bot_toast
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   bubble_bottom_bar:
     dependency: "direct main"
     description:
@@ -119,7 +119,7 @@ packages:
       name: equatable
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.2"
+    version: "1.2.3"
   firebase:
     dependency: transitive
     description:

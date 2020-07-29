@@ -30,16 +30,16 @@ class Tenant extends StatelessWidget {
             ),
             actions: share(),
           ),
-          body: FutureBuilder(
-            future: myDoc().get(),
+          body: StreamBuilder(
+            stream: myDoc().snapshots(),
             builder: (context, myDocSnap) {
               return Body(myDocSnap: myDocSnap);
             },
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: FutureBuilder(
-            future: myDoc().get(),
+          floatingActionButton: StreamBuilder(
+            stream: myDoc().snapshots(),
             builder: (context, myDocSnap) {
               return FloatingBtnFcn(
                 myDocSnap: myDocSnap,
