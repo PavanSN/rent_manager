@@ -16,7 +16,6 @@ class TenantList extends StatelessWidget {
       builder: (context, snap) {
         try {
           List tenantUids = snap.data[buildingName];
-          print(tenantUids);
           return ListView.builder(
             shrinkWrap: true,
             itemCount: tenantUids.length,
@@ -43,7 +42,6 @@ class TenantTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(tenantUid);
     return StreamBuilder(
       stream: Firestore.instance.document('users/$tenantUid').snapshots(),
       builder: (context, tenantSnap) {
@@ -71,71 +69,11 @@ class TenantTile extends StatelessWidget {
                   ),
                 );
               },
-              onLongPress: () {
-                bottomSheet(
-                  context,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      RaisedButton(
-                        child: Text('Delete'),
-                        color: Colors.red,
-                        onPressed: () {
-                          updateDoc({'homeId': null, 'rent': null},
-                              'users/$tenantUid');
-                          myDoc().updateData({
-                            buildingName: FieldValue.arrayRemove([tenantUid]),
-                            'userCount': FieldValue.arrayRemove([tenantUid]),
-                          });
-                          Navigator.pop(context);
-                        },
-                      ),
-                      RaisedButton(
-                        child: Text('Cancel'),
-                        color: Colors.green,
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
-                  ),
-                  'Do you really want to delete ${tenantSnap.data['name']} from $buildingName',
-                );
-              },
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  IconButton(
-                      color: Colors.red,
-                      icon: Icon(Icons.edit),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          child: AlertDialog(
-                            title: Text(
-                              'Edit Rent',
-                              textAlign: TextAlign.center,
-                            ),
-                            content: CustomTextField(
-                              enabled: true,
-                              hintText: 'Enter Rent Amount',
-                              onSubmitted: (rentAmnt) {
-                                updateDoc({'rent': int.parse(rentAmnt)},
-                                    'users/$tenantUid');
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ),
-                        );
-                      }),
-                  IconButton(
-                    color: Colors.green,
-                    icon: Icon(Icons.call),
-                    onPressed: () {
-                      launch('tel:${tenantSnap.data['phoneNum']}');
-                    },
-                  )
-                ],
+              onLongPress: () => onLongPressOnTenantByOwner(
+                  context, tenantUid, buildingName, tenantSnap),
+              trailing: TenantTileTrailingBtn(
+                tenantSnap: tenantSnap,
+                tenantUid: tenantUid,
               ),
               title: Text(tenantSnap.data['name']),
               subtitle: Text('Rent = ${tenantSnap.data['rent']}'),
@@ -147,4 +85,81 @@ class TenantTile extends StatelessWidget {
       },
     );
   }
+}
+
+class TenantTileTrailingBtn extends StatelessWidget {
+  final tenantUid;
+  final tenantSnap;
+
+  TenantTileTrailingBtn({this.tenantSnap, this.tenantUid});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        IconButton(
+            color: Colors.red,
+            icon: Icon(Icons.edit),
+            onPressed: () {
+              showDialog(
+                context: context,
+                child: AlertDialog(
+                  title: Text(
+                    'Edit Rent',
+                    textAlign: TextAlign.center,
+                  ),
+                  content: CustomTextField(
+                    enabled: true,
+                    hintText: 'Enter Rent Amount',
+                    onSubmitted: (rentAmnt) {
+                      updateDoc({'rent': int.parse(rentAmnt.toString())},
+                          'users/$tenantUid');
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              );
+            }),
+        IconButton(
+          color: Colors.green,
+          icon: Icon(Icons.call),
+          onPressed: () {
+            launch('tel:${tenantSnap.data['phoneNum']}');
+          },
+        )
+      ],
+    );
+  }
+}
+
+onLongPressOnTenantByOwner(context, tenantUid, buildingName, tenantSnap) {
+  return bottomSheet(
+    context,
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        RaisedButton(
+          child: Text('Delete'),
+          color: Colors.red,
+          onPressed: () {
+            updateDoc({'homeId': null, 'rent': null}, 'users/$tenantUid');
+            myDoc().updateData({
+              buildingName: FieldValue.arrayRemove([tenantUid]),
+              'userCount': FieldValue.arrayRemove([tenantUid]),
+            });
+            Navigator.pop(context);
+          },
+        ),
+        RaisedButton(
+          child: Text('Cancel'),
+          color: Colors.green,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
+    ),
+    'Do you really want to delete ${tenantSnap.data['name']} from $buildingName',
+  );
 }

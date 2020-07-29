@@ -4,9 +4,9 @@ import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PaymentMethodsBtmSheet.dart';
 
 class Subscription extends StatelessWidget {
-  final AsyncSnapshot ownerDocRef;
+  final AsyncSnapshot myDocSnap;
 
-  const Subscription({this.ownerDocRef});
+  const Subscription({this.myDocSnap});
 
   @override
   Widget build(BuildContext context) {
@@ -20,20 +20,20 @@ class Subscription extends StatelessWidget {
         centerTitle: true,
       ),
       body: SubscriptionOffers(
-        ownerDocRef: ownerDocRef,
+        myDocSnap: myDocSnap,
       ),
     );
   }
 }
 
 class SubscriptionOffers extends StatelessWidget {
-  final AsyncSnapshot ownerDocRef;
+  final AsyncSnapshot myDocSnap;
 
-  const SubscriptionOffers({Key key, this.ownerDocRef}) : super(key: key);
+  const SubscriptionOffers({Key key, this.myDocSnap});
 
   @override
   Widget build(BuildContext context) {
-    int amount = ownerDocRef.data['userCount'].length * 10;
+    int amount = myDocSnap.data['userCount'].length * 10;
     return ListView(
       children: <Widget>[
         SubscriptionCard(
@@ -49,7 +49,7 @@ class SubscriptionOffers extends StatelessWidget {
                 height: 15,
               ),
               Text(
-                'No of tenants = ${ownerDocRef.data['userCount'].length}',
+                'No of tenants = ${myDocSnap.data['userCount'].length}',
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
             ],
@@ -57,15 +57,16 @@ class SubscriptionOffers extends StatelessWidget {
           onPressed: () {
             var date = DateTime.now();
             bottomSheet(
-                context,
-                PaymentMethods(
-                  isTenant: false,
-                  upiId: '9449182341@ybl',
-                  monthYear: '${date.month}${date.year}',
-                  amount: amount.toDouble(),
-                  expDate: date.add(Duration(days: 30)).millisecondsSinceEpoch,
-                ),
-                'Pay Using');
+              context,
+              PaymentMethods(
+                isTenant: false,
+                upiId: 'pavansn2000@ybl',
+                monthYear: '${date.month}${date.year}',
+                amount: amount.toDouble(),
+                expDate: date.add(Duration(days: 30)).millisecondsSinceEpoch,
+              ),
+              'Pay Using',
+            );
           },
         ),
       ],

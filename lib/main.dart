@@ -53,39 +53,35 @@ class RentManager extends StatelessWidget {
   }
 }
 
-class MainPage extends StatelessWidget {
-  final List<BubbleBottomBarItem> tabs = [
-    BubbleBottomBarItem(
-      activeIcon: Icon(Icons.payment),
-      backgroundColor: Colors.deepPurple,
-      title: Text('Pay Rent'),
-      icon: Icon(Icons.payment, color: Colors.grey),
-    ),
-    BubbleBottomBarItem(
-      activeIcon: Icon(Icons.account_balance_wallet),
-      backgroundColor: Colors.deepOrange,
-      title: Text('Get Rent'),
-      icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
-    ),
-    BubbleBottomBarItem(
-        icon: Icon(Icons.account_circle, color: Colors.grey),
-        activeIcon: Icon(Icons.account_circle),
-        title: Text('Profile'),
-        backgroundColor: Colors.purple),
-    BubbleBottomBarItem(
-      activeIcon: Icon(Icons.settings),
-      backgroundColor: Colors.green,
-      title: Text('Settings'),
-      icon: Icon(Icons.settings, color: Colors.grey),
-    ),
-  ];
-  final List body = [
-    Tenant(),
-    CheckSubscription(),
-    ProfileScreen(),
-    Settings()
-  ];
+final List<BubbleBottomBarItem> tabs = [
+  BubbleBottomBarItem(
+    activeIcon: Icon(Icons.payment),
+    backgroundColor: Colors.deepPurple,
+    title: Text('Pay Rent'),
+    icon: Icon(Icons.payment, color: Colors.grey),
+  ),
+  BubbleBottomBarItem(
+    activeIcon: Icon(Icons.account_balance_wallet),
+    backgroundColor: Colors.deepOrange,
+    title: Text('Get Rent'),
+    icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
+  ),
+  BubbleBottomBarItem(
+      icon: Icon(Icons.account_circle, color: Colors.grey),
+      activeIcon: Icon(Icons.account_circle),
+      title: Text('Profile'),
+      backgroundColor: Colors.purple),
+  BubbleBottomBarItem(
+    activeIcon: Icon(Icons.settings),
+    backgroundColor: Colors.green,
+    title: Text('Settings'),
+    icon: Icon(Icons.settings, color: Colors.grey),
+  ),
+];
 
+final List body = [Tenant(), CheckSubscription(), ProfileScreen(), Settings()];
+
+class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StatefulBuilder(

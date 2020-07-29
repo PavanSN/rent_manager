@@ -46,9 +46,7 @@ class PayUsingUpi {
   }
 
   handleSuccess(String txnId, String monthYear, bool isTenant, int expDate) {
-    print(monthYear);
     if (isTenant) {
-      print('tenant successfully paid');
       Firestore.instance
           .document(
               'users/${Injector.get<UserDetails>().uid}/payments/payments')

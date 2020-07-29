@@ -239,7 +239,6 @@ class PayButton extends StatelessWidget {
               .then((value) => upiId = value.data['upiId']);
           return RaisedButton(
             onPressed: () {
-              print(upiId);
               bottomSheet(
                 context,
                 PaymentMethods(
@@ -257,7 +256,6 @@ class PayButton extends StatelessWidget {
             color: Colors.deepPurpleAccent,
           );
         } catch (e) {
-          print(e.toString() + 'in paybutton tenant');
           return Text('Waiting...');
         }
       },
@@ -324,7 +322,6 @@ class PayStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(status);
     if (status == 'paid') {
       return Icon(
         Icons.done_all,
