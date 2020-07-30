@@ -73,15 +73,8 @@ class FloatingBtnFcn extends StatelessWidget {
                     context, PhoneNumVerificationUI(), 'Verify Your Mobile')
                 : bottomSheet(context, AddOwner(), 'Enter Owner Phone Number');
           } else {
-            Firestore.instance
-                .document('users/${myDocSnap.data['homeId']}')
-                .get()
-                .then(
-              (snap) {
-                var phoneNum = snap.data['phoneNum'];
-                launch('tel:$phoneNum');
-              },
-            );
+            futureDoc('users/${myDocSnap.data['homeId']}')
+                .then((value) => launch('tel:${value.data['phoneNum']}'));
           }
         },
       );
@@ -147,9 +140,7 @@ class AddOwner extends StatelessWidget {
 }
 
 addOwner(context) {
-  if (phoneNo.phoneNumber == Injector
-      .get<UserDetails>()
-      .phoneNum) {
+  if (phoneNo.phoneNumber == Injector.get<UserDetails>().phoneNum) {
     BotToast.showSimpleNotification(
         title: 'You cannot enter your phone number');
     Navigator.of(context).pop();

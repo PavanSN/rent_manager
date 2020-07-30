@@ -1,12 +1,14 @@
 import 'dart:io';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/Models/UserDetails.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-import 'CommonWidgetsAndData.dart';
+
+import '../CommonFiles/CommonWidgetsAndData.dart';
 
 class ImageCapture extends StatefulWidget {
   final buildingName;
@@ -21,8 +23,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   PickedFile imageFile;
 
   void pickImage(source) async {
-    PickedFile selected = await ImagePicker.platform
-        .pickImage(source: source);
+    PickedFile selected = await ImagePicker().getImage(source: source);
     setState(() {
       imageFile = selected;
     });
