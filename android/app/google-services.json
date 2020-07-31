@@ -8,18 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:32692915931:android:43e5b8a67e068594d286fe",
+        "mobilesdk_app_id": "1:32692915931:android:23db1ef574e2b0fcd286fe",
         "android_client_info": {
           "package_name": "com.pavansn.rent_manager"
         }
       },
       "oauth_client": [
         {
-          "client_id": "32692915931-2q90dj6ojru4icgehtsgo21eq1pu60rb.apps.googleusercontent.com",
+          "client_id": "32692915931-s2mt1iskgno982nbh118lfogs3qrn141.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.pavansn.rent_manager",
-            "certificate_hash": "0b4a99d79b0e855049e7e595317321cf444495d2"
+            "certificate_hash": "368e846857326757b47c27ffca1c1f8761ceff0f"
           }
         },
         {
