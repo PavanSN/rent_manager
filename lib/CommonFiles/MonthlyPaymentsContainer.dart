@@ -21,6 +21,14 @@ class MonthlyPayments extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          '${tenantSnap.data['name']}   ₹${tenantSnap.data['rent']}/month',
+          style: TextStyle(color: Colors.black),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
       body: Column(
         children: <Widget>[
           Tabs(

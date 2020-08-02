@@ -22,7 +22,7 @@ class BuildingsCard extends StatelessWidget {
       elevation: 10,
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         height: MediaQuery.of(context).size.height * 0.2,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -44,7 +44,7 @@ class BuildingsCard extends StatelessWidget {
                   child: Image.network(
                     (buildingPhoto != null)
                         ? buildingPhoto
-                        : 'https://img.icons8.com/color/96/000000/city-buildings.png',
+                        : 'https://img.icons8.com/bubbles/50/000000/city.png',
                     fit: BoxFit.cover,
                     height: 50,
                     width: 50,
@@ -114,7 +114,7 @@ class BuildingsCard extends StatelessWidget {
                   },
                   color: Colors.green,
                   child: Text('View Tenants'),
-                )
+                ),
               ],
             )
           ],

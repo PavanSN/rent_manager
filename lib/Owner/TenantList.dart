@@ -6,8 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class TenantList extends StatelessWidget {
   final String buildingName;
+  final rentAmnt;
 
-  TenantList({this.buildingName});
+  TenantList({this.buildingName, this.rentAmnt});
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +38,9 @@ class TenantList extends StatelessWidget {
 class TenantTile extends StatelessWidget {
   final tenantUid;
   final buildingName;
+  final rentAmnt;
 
-  const TenantTile({this.tenantUid, this.buildingName});
+  const TenantTile({this.tenantUid, this.buildingName, this.rentAmnt});
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +100,16 @@ class TenantTileTrailingBtn extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
+        tenantSnap.data['rent'] == null
+            ? IconButton(
+                icon: Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                ),
+                onPressed: () => null,
+                tooltip: 'Update rent amount',
+              )
+            : SizedBox(),
         IconButton(
             color: Colors.red,
             icon: Icon(Icons.edit),

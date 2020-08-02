@@ -47,7 +47,7 @@ class NewTenantRequestCard extends StatelessWidget {
           var requesterPhoneNo = snap.data['phoneNum'];
           return Card(
             elevation: 10,
-            margin: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+            margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: Container(
