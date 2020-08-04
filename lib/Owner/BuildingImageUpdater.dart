@@ -140,7 +140,7 @@ class _UploaderState extends State<Uploader> {
         .then((value) async {
       String photoUrl = await value.ref.getDownloadURL();
       myDoc().updateData({
-        'buildingPhotos': {widget.buildingName: photoUrl},
+        'buildingsPhoto': {widget.buildingName: photoUrl},
       }).then((value) => Navigator.of(context).pop());
     });
   }

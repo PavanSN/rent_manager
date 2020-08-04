@@ -123,7 +123,7 @@ onAccept(context, requesterUid) {
                   buildingName: FieldValue.arrayUnion([requesterUid]),
                   'requests': FieldValue.arrayRemove([requesterUid]),
                   'userCount': FieldValue.arrayUnion([requesterUid]),
-                  'buildingPhotos': {buildingName: null}
+                  'buildingsPhoto': {buildingName: null}
                 }).then((_) {
                   updateDoc(
                     {'homeId': Injector.get<UserDetails>().uid},

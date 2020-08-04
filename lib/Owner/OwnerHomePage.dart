@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
@@ -28,6 +29,12 @@ class CheckSubscription extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        backgroundColor: Colors.red,
+        onPressed: () => addBuilding(context),
+      ),
       body: StreamBuilder(
         stream: myDoc().snapshots(),
         builder: (context, doc) {
@@ -56,6 +63,25 @@ class CheckSubscription extends StatelessWidget {
   }
 }
 
+addBuilding(context) {
+  bottomSheet(
+      context,
+      CustomTextField(
+        enabled: true,
+        hintText: 'ex: Building-1',
+        onSubmitted: (buildingName) {
+          myDoc().updateData({
+            'buildings': FieldValue.arrayUnion([buildingName]),
+            buildingName: [],
+            'buildingsPhoto': {buildingName: null}
+          });
+          Navigator.of(context).pop();
+        },
+      ),
+      'Add Building');
+}
+
+
 class Owner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -70,6 +96,7 @@ class Owner extends StatelessWidget {
           return ListView.builder(
             itemCount: myDocSnap.data['buildings'].length,
             itemBuilder: (context, index) {
+              print(myDocSnap.data['buildings'][0]);
               return BuildingsCard(
                 buildingName: myDocSnap.data['buildings'][index],
                 myDocSnap: myDocSnap,
@@ -83,3 +110,4 @@ class Owner extends StatelessWidget {
     );
   }
 }
+
