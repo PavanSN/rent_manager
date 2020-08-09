@@ -71,7 +71,12 @@ class FloatingBtnFcn extends StatelessWidget {
             phoneNum == null
                 ? bottomSheet(
                     context, PhoneNumVerificationUI(), 'Verify Your Mobile')
-                : bottomSheet(context, AddOwner(), 'Enter Owner Phone Number');
+                : bottomSheet(
+                    context,
+                    AddOwner(
+                      phoneNum: phoneNum,
+                    ),
+                    'Enter Owner Phone Number');
           } else {
             futureDoc('users/${myDocSnap.data['homeId']}')
                 .then((value) => launch('tel:${value.data['phoneNum']}'));
@@ -121,6 +126,10 @@ class Body extends StatelessWidget {
 PhoneNumber phoneNo;
 
 class AddOwner extends StatelessWidget {
+  final phoneNum;
+
+  AddOwner({this.phoneNum});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -133,14 +142,16 @@ class AddOwner extends StatelessWidget {
         ),
         hintText: "Phone Number",
         onInputChanged: (phone) => phoneNo = phone,
-        onSubmit: () => addOwner(context),
+        onSubmit: () => addOwner(context, phoneNum),
       ),
     );
   }
 }
 
-addOwner(context) {
-  if (phoneNo.phoneNumber == Injector.get<UserDetails>().phoneNum) {
+addOwner(context, phoneNum) {
+  if (phoneNum == Injector
+      .get<UserDetails>()
+      .phoneNum) {
     BotToast.showSimpleNotification(
         title: 'You cannot enter your phone number');
     Navigator.of(context).pop();
