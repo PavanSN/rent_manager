@@ -149,9 +149,7 @@ class AddOwner extends StatelessWidget {
 }
 
 addOwner(context, phoneNum) {
-  if (phoneNum == Injector
-      .get<UserDetails>()
-      .phoneNum) {
+  if (phoneNum == phoneNo.phoneNumber) {
     BotToast.showSimpleNotification(
         title: 'You cannot enter your phone number');
     Navigator.of(context).pop();

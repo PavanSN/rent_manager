@@ -32,7 +32,17 @@ class BuildingsCard extends StatelessWidget {
               onTap: () => null,
               title: Text(buildingName),
               subtitle:
-              Text('Tenants : ${myDocSnap.data[buildingName].length}'),
+                  Text('Tenants : ${myDocSnap.data[buildingName].length}'),
+              trailing: IconButton(
+                  icon: Icon(
+                    Icons.add,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () => bottomSheet(
+                        context,
+                        AddTenant(buildingName: buildingName),
+                        'Add Tenant',
+                      )),
               leading: GestureDetector(
                 onTap: () {
                   Navigator.of(context)
