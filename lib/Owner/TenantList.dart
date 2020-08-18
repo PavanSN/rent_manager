@@ -72,7 +72,7 @@ class TenantTile extends StatelessWidget {
                 );
               },
               onLongPress: () => onLongPressOnTenantByOwner(
-                  context, tenantUid, buildingName, tenantSnap),
+                  context, tenantUid, buildingName, tenantSnap, false),
               trailing: TenantTileTrailingBtn(
                 tenantSnap: tenantSnap,
                 tenantUid: tenantUid,
@@ -145,7 +145,8 @@ class TenantTileTrailingBtn extends StatelessWidget {
   }
 }
 
-onLongPressOnTenantByOwner(context, tenantUid, buildingName, tenantSnap) {
+onLongPressOnTenantByOwner(context, tenantUid, buildingName, tenantSnap,
+    isOffline) {
   return bottomSheet(
     context,
     Row(
@@ -155,12 +156,20 @@ onLongPressOnTenantByOwner(context, tenantUid, buildingName, tenantSnap) {
           child: Text('Delete'),
           color: Colors.red,
           onPressed: () {
-            updateDoc({'homeId': null, 'rent': null}, 'users/$tenantUid');
-            myDoc().updateData({
-              buildingName: FieldValue.arrayRemove([tenantUid]),
-              'userCount': FieldValue.arrayRemove([tenantUid]),
-            });
-            Navigator.pop(context);
+            if (!isOffline) {
+              updateDoc({'homeId': null, 'rent': null}, 'users/$tenantUid');
+              myDoc().updateData({
+                buildingName: FieldValue.arrayRemove([tenantUid]),
+                'userCount': FieldValue.arrayRemove([tenantUid]),
+              });
+              Navigator.pop(context);
+            } else {
+              myDoc().updateData({
+                'offlineTenants': FieldValue.arrayRemove([tenantUid])
+              });
+              myDoc().collection('offline').document(tenantUid).delete();
+              Navigator.pop(context);
+            }
           },
         ),
         RaisedButton(
@@ -172,6 +181,6 @@ onLongPressOnTenantByOwner(context, tenantUid, buildingName, tenantSnap) {
         ),
       ],
     ),
-    'Do you really want to delete ${tenantSnap.data['name']} from $buildingName',
+    'Do you really want to delete ${tenantSnap.data['name']}',
   );
 }

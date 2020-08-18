@@ -24,10 +24,6 @@ class Tenant extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: Text(
-              'Tenant',
-              style: TextStyle(color: Colors.black),
-            ),
             actions: share(),
           ),
           body: StreamBuilder(

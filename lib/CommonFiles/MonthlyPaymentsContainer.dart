@@ -2,6 +2,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/Models/TabPressed.dart';
+import 'package:home_manager/Models/UserDetails.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonWidgetsAndData.dart';
@@ -11,11 +12,15 @@ class MonthlyPayments extends StatelessWidget {
   final AsyncSnapshot tenantSnap;
   final bool isTenant;
   final int rentAmnt;
+  final bool isOffline;
+  final String offlineTenantUid;
 
   MonthlyPayments({
     this.tenantSnap,
     this.isTenant,
     this.rentAmnt,
+    this.isOffline,
+    this.offlineTenantUid,
   });
 
   @override
@@ -24,7 +29,9 @@ class MonthlyPayments extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          '${tenantSnap.data['name']}   ₹${tenantSnap.data['rent']}/month',
+          !isOffline
+              ? '${tenantSnap.data['name']}   ₹${tenantSnap.data['rent']}/month'
+              : '${tenantSnap.data['name']}',
           style: TextStyle(color: Colors.black),
           overflow: TextOverflow.ellipsis,
         ),
@@ -36,11 +43,17 @@ class MonthlyPayments extends StatelessWidget {
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           PayTile(
-            month: DateTime.now().month,
-            year: DateTime.now().year,
+            month: DateTime
+                .now()
+                .month,
+            year: DateTime
+                .now()
+                .year,
             isTenant: isTenant,
             tenantSnap: tenantSnap,
             rentAmnt: rentAmnt,
+            isOffline: isOffline,
+            offlineTenantUid: offlineTenantUid,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           StateBuilder(
@@ -49,10 +62,14 @@ class MonthlyPayments extends StatelessWidget {
               return Expanded(
                 flex: 8,
                 child: MonthsWithPaymentTile(
-                  year: Injector.get<TabPressed>().yearPressed,
+                  year: Injector
+                      .get<TabPressed>()
+                      .yearPressed,
                   isTenant: isTenant,
                   tenantSnap: tenantSnap,
                   rentAmnt: rentAmnt,
+                  isOffline: isOffline,
+                  offlineTenantUid: offlineTenantUid,
                 ),
               );
             },
@@ -121,9 +138,15 @@ class MonthsWithPaymentTile extends StatelessWidget {
   final bool isTenant;
   final AsyncSnapshot tenantSnap;
   final int rentAmnt;
+  final bool isOffline;
+  final String offlineTenantUid;
 
-  MonthsWithPaymentTile(
-      {this.year, this.isTenant, this.tenantSnap, this.rentAmnt});
+  MonthsWithPaymentTile({this.year,
+    this.isTenant,
+    this.tenantSnap,
+    this.rentAmnt,
+    this.isOffline,
+    this.offlineTenantUid});
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +159,8 @@ class MonthsWithPaymentTile extends StatelessWidget {
           year: year,
           isTenant: isTenant,
           rentAmnt: rentAmnt,
+          isOffline: isOffline,
+          offlineTenantUid: offlineTenantUid,
         );
       },
     );
@@ -150,9 +175,16 @@ class PayTile extends StatelessWidget {
   final bool isTenant;
   final AsyncSnapshot tenantSnap;
   final int rentAmnt;
+  final bool isOffline;
+  final String offlineTenantUid;
 
-  PayTile(
-      {this.month, this.year, this.isTenant, this.tenantSnap, this.rentAmnt});
+  PayTile({this.month,
+    this.year,
+    this.isTenant,
+    this.tenantSnap,
+    this.rentAmnt,
+    this.isOffline,
+    this.offlineTenantUid});
 
   @override
   Widget build(BuildContext context) {
@@ -174,10 +206,17 @@ class PayTile extends StatelessWidget {
                     color: Colors.green,
                     child: Text('Paid'),
                     onPressed: () {
-                      Firestore.instance
+                      !isOffline
+                          ? Firestore.instance
                           .document(
-                              'users/${tenantSnap.data['uid']}/payments/payments')
-                          .updateData({monthYear: monthYear});
+                          'users/${tenantSnap.data['uid']}/payments/payments')
+                          .updateData({monthYear: 'paid'})
+                          : Firestore.instance
+                          .document(
+                          'users/${Injector
+                              .get<UserDetails>()
+                              .uid}/offline/$offlineTenantUid/payments/payments')
+                          .updateData({monthYear: 'paid'});
                       Navigator.pop(context);
                     },
                   ),
@@ -185,9 +224,16 @@ class PayTile extends StatelessWidget {
                     color: Colors.red,
                     child: Text('Not paid'),
                     onPressed: () {
-                      Firestore.instance
+                      !isOffline
+                          ? Firestore.instance
                           .document(
                           'users/${tenantSnap.data['uid']}/payments/payments')
+                          .updateData({monthYear: FieldValue.delete()})
+                          : Firestore.instance
+                          .document(
+                          'users/${Injector
+                              .get<UserDetails>()
+                              .uid}/offline/$offlineTenantUid/payments/payments')
                           .updateData({monthYear: FieldValue.delete()});
                       Navigator.of(context).pop();
                     },
@@ -205,8 +251,16 @@ class PayTile extends StatelessWidget {
         trailing: StreamBuilder(
           stream: isTenant
               ? streamDoc('users/${myDoc().documentID}/payments/payments')
+              : !isOffline
+              ? Firestore.instance
+              .document(
+              'users/${tenantSnap.data['uid']}/payments/payments')
+              .snapshots()
               : Firestore.instance
-              .document('users/${tenantSnap.data['uid']}/payments/payments')
+              .document(
+              'users/${Injector
+                  .get<UserDetails>()
+                  .uid}/offline/$offlineTenantUid/payments/payments')
               .snapshots(),
           builder: (context, paymentDoc) {
             try {
