@@ -95,7 +95,8 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
                     return Container();
                   } else if (doc.data['expDate'] <=
                           DateTime.now().millisecondsSinceEpoch &&
-                      doc.data['userCount'].length != 0) {
+                      (doc.data['userCount'].length != 0 ||
+                          doc.data['offlineTenants'].length != 0)) {
                     BotToast.showSimpleNotification(
                         title: 'You subscription has ended...');
                     return Subscription(myDocSnap: doc);
