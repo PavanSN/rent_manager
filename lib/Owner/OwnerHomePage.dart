@@ -56,32 +56,28 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
               ? addBuilding(context)
               : bottomSheet(
                   context,
-                  Column(
-                    children: <Widget>[
-                      CustomTextField(
-                        enabled: true,
-                        hintText: 'Tenant Name',
-                        onSubmitted: (text) {
-                          myDoc().collection('offline').add({
-                            'name': text,
-                            'accCreated': DateTime.now().year,
-                          }).then((value) {
-                            myDoc().updateData({
-                              'offlineTenants':
-                                  FieldValue.arrayUnion([value.documentID]),
-                            });
-                            myDoc()
-                                .collection('offline')
-                                .document(value.documentID)
-                                .collection('payments')
-                                .document('payments')
-                                .setData({'exist': true}, merge: true);
-                          });
-
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
+                  CustomTextField(
+                    enabled: true,
+                    hintText: 'Tenant Name',
+                    onSubmitted: (text) {
+                      myDoc().collection('offline').add({
+                        'name': text,
+                        'accCreated': DateTime.now().year,
+                        'rent': null,
+                      }).then((value) {
+                        myDoc().updateData({
+                          'offlineTenants':
+                              FieldValue.arrayUnion([value.documentID]),
+                        });
+                        myDoc()
+                            .collection('offline')
+                            .document(value.documentID)
+                            .collection('payments')
+                            .document('payments')
+                            .setData({'exist': true}, merge: true);
+                      });
+                      Navigator.pop(context);
+                    },
                   ),
                   'Add Tenant');
         },
@@ -153,36 +149,58 @@ class OfflineHomePage extends StatelessWidget {
                         onTap: () {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
-                            return MonthlyPayments(
-                              tenantSnap: snap,
-                              isTenant: false,
-                              isOffline: true,
-                              offlineTenantUid: offlineTenants[index],
-                            );
-                          }));
+                                return MonthlyPayments(
+                                  tenantSnap: snap,
+                                  isTenant: false,
+                                  isOffline: true,
+                                  offlineTenantUid: offlineTenants[index],
+                                );
+                              }));
                         },
+                        subtitle: Text(snap.data['address'] ?? 'null'),
                         title: Text(snap.data['name']),
-                        subtitle: Text(snap.data['rent'] ?? 'null'),
-                        trailing: IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            color: Colors.red,
-                          ),
-                          onPressed: () {
-                            bottomSheet(
-                                context,
-                                CustomTextField(
-                                  enabled: true,
-                                  hintText: 'Tenant Rent',
-                                  onSubmitted: (rent) {
-                                    myDoc()
-                                        .collection('offline')
-                                        .document(offlineTenants[index])
-                                        .updateData({'rent': rent});
-                                  },
-                                ),
-                                'Enter rent');
-                          },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(snap.data['rent'] ?? 'null'),
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {
+                                bottomSheet(
+                                    context,
+                                    Column(
+                                      children: <Widget>[
+                                        CustomTextField(
+                                          enabled: true,
+                                          hintText: 'Tenant Rent',
+                                          onSubmitted: (rent) {
+                                            myDoc()
+                                                .collection('offline')
+                                                .document(offlineTenants[index])
+                                                .updateData({'rent': rent});
+                                          },
+                                        ),
+                                        CustomTextField(
+                                          enabled: true,
+                                          hintText: 'Tenant Address',
+                                          onSubmitted: (address) {
+                                            myDoc()
+                                                .collection('offline')
+                                                .document(offlineTenants[index])
+                                                .updateData(
+                                                {'address': address});
+                                            Navigator.pop(context);
+                                          },
+                                        )
+                                      ],
+                                    ),
+                                    'Enter rent');
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     );
