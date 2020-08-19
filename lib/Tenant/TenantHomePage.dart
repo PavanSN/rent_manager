@@ -107,9 +107,11 @@ class Body extends StatelessWidget {
     try {
       if (myDocSnap.data['homeId'] != null) {
         return MonthlyPayments(
-            tenantSnap: myDocSnap,
-            isTenant: true,
-            rentAmnt: myDocSnap.data['rent']);
+          tenantSnap: myDocSnap,
+          isTenant: true,
+          rentAmnt: myDocSnap.data['rent'],
+          isOffline: false,
+        );
       } else {
         return Container();
       }
@@ -156,14 +158,9 @@ addOwner(context, phoneNum) {
         .getDocuments()
         .then((docs) {
       if (docs.documents.length != 0) {
-        var doc = docs.documents
-            .elementAt(0)
-            .reference;
+        var doc = docs.documents.elementAt(0).reference;
         doc.updateData({
-          'requests': FieldValue.arrayUnion([Injector
-              .get<UserDetails>()
-              .uid
-          ])
+          'requests': FieldValue.arrayUnion([Injector.get<UserDetails>().uid])
         });
         BotToast.showSimpleNotification(
             title: 'Waiting for owner to accept your request');

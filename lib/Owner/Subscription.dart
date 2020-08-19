@@ -33,7 +33,9 @@ class SubscriptionOffers extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int amount = myDocSnap.data['userCount'].length * 10;
+    int amount = (myDocSnap.data['userCount'].length +
+            myDocSnap.data['offlineTenants'].length) *
+        10;
     return ListView(
       children: <Widget>[
         SubscriptionCard(
@@ -49,7 +51,8 @@ class SubscriptionOffers extends StatelessWidget {
                 height: 15,
               ),
               Text(
-                'No of tenants = ${myDocSnap.data['userCount'].length}',
+                'No of tenants = ${myDocSnap.data['userCount'].length +
+                    myDocSnap.data['offlineTenants'].length}',
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
             ],

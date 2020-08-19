@@ -86,36 +86,33 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
                   'Add Tenant');
         },
       ),
-      body: !isOffline
-          ? StreamBuilder(
-              stream: myDoc().snapshots(),
-              builder: (context, doc) {
-                try {
-                  if (isOffline) {
-                    return Container();
-                  } else if (doc.data['expDate'] <=
-                          DateTime.now().millisecondsSinceEpoch &&
-                      (doc.data['userCount'].length != 0 ||
-                          doc.data['offlineTenants'].length != 0)) {
-                    BotToast.showSimpleNotification(
-                        title: 'You subscription has ended...');
-                    return Subscription(myDocSnap: doc);
-                  } else if (doc.data['requests'].length != 0) {
-                    BotToast.showSimpleNotification(title: 'New Request');
-                    return Requests();
-                  } else if (doc.data['upiId'] == null) {
-                    return Center(child: UpdateUpiTile());
-                  } else if (doc.data['phoneNum'] != null) {
-                    return Owner();
-                  } else {
-                    return Center(child: UpdatePhoneNumTile());
-                  }
-                } catch (e) {
-                  return Container();
-                }
-              },
-            )
-          : OfflineHomePage(),
+      body: StreamBuilder(
+        stream: myDoc().snapshots(),
+        builder: (context, doc) {
+          try {
+            if (doc.data['expDate'] <= DateTime.now().millisecondsSinceEpoch &&
+                (doc.data['userCount'].length != 0 ||
+                    doc.data['offlineTenants'].length != 0)) {
+              BotToast.showSimpleNotification(
+                  title: 'You subscription has ended...');
+              return Subscription(myDocSnap: doc);
+            } else if (isOffline) {
+              return OfflineHomePage();
+            } else if (doc.data['requests'].length != 0) {
+              BotToast.showSimpleNotification(title: 'New Request');
+              return Requests();
+            } else if (doc.data['upiId'] == null) {
+              return Center(child: UpdateUpiTile());
+            } else if (doc.data['phoneNum'] != null) {
+              return Owner();
+            } else {
+              return Center(child: UpdatePhoneNumTile());
+            }
+          } catch (e) {
+            return Container();
+          }
+        },
+      ),
     );
   }
 }
