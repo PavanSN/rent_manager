@@ -71,11 +71,10 @@ class TenantTile extends StatelessWidget {
                   ),
                 );
               },
-              onLongPress: () => onLongPressOnTenantByOwner(
-                  context, tenantUid, buildingName, tenantSnap, false),
               trailing: TenantTileTrailingBtn(
                 tenantSnap: tenantSnap,
                 tenantUid: tenantUid,
+                buildingName: buildingName,
               ),
               title: Text(tenantSnap.data['name']),
               subtitle: Text('Rent = ${tenantSnap.data['rent']}'),
@@ -92,8 +91,9 @@ class TenantTile extends StatelessWidget {
 class TenantTileTrailingBtn extends StatelessWidget {
   final tenantUid;
   final tenantSnap;
+  final buildingName;
 
-  TenantTileTrailingBtn({this.tenantSnap, this.tenantUid});
+  TenantTileTrailingBtn({this.tenantSnap, this.tenantUid, this.buildingName});
 
   @override
   Widget build(BuildContext context) {
@@ -101,17 +101,21 @@ class TenantTileTrailingBtn extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         tenantSnap.data['rent'] == null
-            ? IconButton(
-                icon: Icon(
-                  Icons.error_outline,
-                  color: Colors.red,
-                ),
-                onPressed: () => null,
-                tooltip: 'Update rent amount',
+            ? Icon(
+                Icons.error_outline,
+                color: Colors.red,
               )
             : SizedBox(),
         IconButton(
+          icon: Icon(
+            Icons.delete,
             color: Colors.red,
+          ),
+          onPressed: () =>
+              onDelete(context, tenantUid, buildingName, tenantSnap, false),
+        ),
+        IconButton(
+            color: Colors.blue,
             icon: Icon(Icons.edit),
             onPressed: () {
               showDialog(
@@ -145,8 +149,7 @@ class TenantTileTrailingBtn extends StatelessWidget {
   }
 }
 
-onLongPressOnTenantByOwner(context, tenantUid, buildingName, tenantSnap,
-    isOffline) {
+onDelete(context, tenantUid, buildingName, tenantSnap, isOffline) {
   return bottomSheet(
     context,
     Row(

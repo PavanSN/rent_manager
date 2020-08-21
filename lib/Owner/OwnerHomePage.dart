@@ -5,8 +5,10 @@ import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
 import 'package:home_manager/Owner/TenantList.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:share/share.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'BuildingCard.dart';
 import 'Subscription.dart';
@@ -137,38 +139,47 @@ class OfflineHomePage extends StatelessWidget {
                       elevation: 10,
                       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       child: ListTile(
-                        onLongPress: () {
-                          onLongPressOnTenantByOwner(
-                            context,
-                            offlineTenants[index],
-                            '',
-                            snap,
-                            true,
-                          );
-                        },
                         onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
                                 return MonthlyPayments(
                                   tenantSnap: snap,
                                   isTenant: false,
                                   isOffline: true,
                                   offlineTenantUid: offlineTenants[index],
                                 );
-                              }));
+                              },
+                            ),
+                          );
                         },
                         subtitle: Text(snap.data['address'] ?? 'null'),
-                        title: Text(snap.data['name']),
+                        title: Text(
+                            snap.data['name'] + '   (₹${snap.data['rent']})'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Text(snap.data['rent'] ?? 'null'),
+                            IconButton(
+                                icon: Icon(Icons.call, color: Colors.green),
+                                onPressed: () {
+                                  launch('tel:${snap.data['phoneNum']}');
+                                }),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                              onPressed: () => onDelete(context,
+                                  offlineTenants[index], '', snap, true),
+                            ),
                             IconButton(
                               icon: Icon(
                                 Icons.edit,
-                                color: Colors.red,
+                                color: Colors.blue,
                               ),
                               onPressed: () {
+                                PhoneNumber phoneNo;
                                 bottomSheet(
                                     context,
                                     Column(
@@ -181,6 +192,9 @@ class OfflineHomePage extends StatelessWidget {
                                                 .collection('offline')
                                                 .document(offlineTenants[index])
                                                 .updateData({'rent': rent});
+                                            BotToast.showSimpleNotification(
+                                                title:
+                                                    'Rent updated successfully');
                                           },
                                         ),
                                         CustomTextField(
@@ -192,8 +206,37 @@ class OfflineHomePage extends StatelessWidget {
                                                 .document(offlineTenants[index])
                                                 .updateData(
                                                 {'address': address});
-                                            Navigator.pop(context);
+                                            BotToast.showSimpleNotification(
+                                                title:
+                                                'Address updated successfully');
                                           },
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 20),
+                                          child: InternationalPhoneNumberInput(
+                                            hintText: 'Phone Number',
+                                            initialValue:
+                                            PhoneNumber(isoCode: 'IN'),
+                                            onInputChanged: (phoneNum) =>
+                                            phoneNo = phoneNum,
+                                            onSubmit: () {
+                                              myDoc()
+                                                  .collection('offline')
+                                                  .document(
+                                                  offlineTenants[index])
+                                                  .updateData(
+                                                {
+                                                  'phoneNum':
+                                                  phoneNo.phoneNumber
+                                                },
+                                              );
+                                              BotToast.showSimpleNotification(
+                                                  title:
+                                                  'Phone number updated successfully');
+                                              Navigator.pop(context);
+                                            },
+                                          ),
                                         )
                                       ],
                                     ),
