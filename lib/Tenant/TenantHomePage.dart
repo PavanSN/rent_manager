@@ -58,14 +58,14 @@ class FloatingBtnFcn extends StatelessWidget {
             : Icon(Icons.add),
         onPressed: () {
           if (myDocSnap.data['homeId'] == null) {
-            String phoneNum = myDocSnap.data['phoneNum'];
-            phoneNum == null
+            String tenantPhone = myDocSnap.data['phoneNum'];
+            tenantPhone == null
                 ? bottomSheet(
                     context, PhoneNumVerificationUI(), 'Verify Your Mobile')
                 : bottomSheet(
                     context,
                     AddOwner(
-                      phoneNum: phoneNum,
+                      myDocSnap: myDocSnap,
                     ),
                     'Enter Owner Phone Number');
           } else {
@@ -119,9 +119,9 @@ class Body extends StatelessWidget {
 PhoneNumber phoneNo;
 
 class AddOwner extends StatelessWidget {
-  final phoneNum;
+  final myDocSnap;
 
-  AddOwner({this.phoneNum});
+  AddOwner({this.myDocSnap});
 
   @override
   Widget build(BuildContext context) {
@@ -135,35 +135,38 @@ class AddOwner extends StatelessWidget {
         ),
         hintText: "Phone Number",
         onInputChanged: (phone) => phoneNo = phone,
-        onSubmit: () => addOwner(context, phoneNum),
+        onSubmit: () {
+          Firestore.instance
+              .collection('users')
+              .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
+              .getDocuments()
+              .then((docs) {
+            if (docs.documents.first.data['uid'] ==
+                Injector
+                    .get<UserDetails>()
+                    .uid) {
+              BotToast.showSimpleNotification(
+                  title: 'You cannot enter your phone number');
+              Navigator.of(context).pop();
+            } else if (docs.documents.length == 0) {
+              BotToast.showSimpleNotification(
+                  title: 'Owner\'s phone isn\'t registered');
+            } else {
+              var doc = docs.documents.first.reference;
+              doc.updateData({
+                'requests':
+                FieldValue.arrayUnion([Injector
+                    .get<UserDetails>()
+                    .uid
+                ])
+              });
+              BotToast.showSimpleNotification(
+                  title: 'Waiting for owner to accept your request');
+              Navigator.pop(context);
+            }
+          });
+        },
       ),
     );
-  }
-}
-
-addOwner(context, phoneNum) {
-  if (phoneNum == phoneNo.phoneNumber) {
-    BotToast.showSimpleNotification(
-        title: 'You cannot enter your phone number');
-    Navigator.of(context).pop();
-  } else {
-    Firestore.instance
-        .collection('users')
-        .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
-        .getDocuments()
-        .then((docs) {
-      if (docs.documents.length != 0) {
-        var doc = docs.documents.elementAt(0).reference;
-        doc.updateData({
-          'requests': FieldValue.arrayUnion([Injector.get<UserDetails>().uid])
-        });
-        BotToast.showSimpleNotification(
-            title: 'Waiting for owner to accept your request');
-        Navigator.pop(context);
-      } else {
-        BotToast.showSimpleNotification(
-            title: 'Owner\'s phone isn\'t registered');
-      }
-    });
   }
 }
