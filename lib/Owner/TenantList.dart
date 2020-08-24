@@ -66,6 +66,8 @@ class TenantTile extends StatelessWidget {
                       return MonthlyPayments(
                         tenantSnap: tenantSnap,
                         isTenant: false,
+                        isOffline: false,
+                        rentAmnt: rentAmnt,
                       );
                     },
                   ),

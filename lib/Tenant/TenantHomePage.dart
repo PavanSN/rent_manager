@@ -15,17 +15,12 @@ import '../CommonFiles/CommonWidgetsAndData.dart';
 class Tenant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    BotToast.showSimpleNotification(title: 'Welcome Tenant');
     return StatefulBuilder(
       builder: (context, setState) {
         myDoc().get().catchError((e) {
           setState(() {});
         });
         return Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            actions: share(),
-          ),
           body: StreamBuilder(
             stream: myDoc().snapshots(),
             builder: (context, myDocSnap) {

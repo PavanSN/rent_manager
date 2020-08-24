@@ -161,11 +161,6 @@ class OfflineHomePage extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             IconButton(
-                                icon: Icon(Icons.call, color: Colors.green),
-                                onPressed: () {
-                                  launch('tel:${snap.data['phoneNum']}');
-                                }),
-                            IconButton(
                               icon: Icon(
                                 Icons.delete,
                                 color: Colors.red,
@@ -205,10 +200,10 @@ class OfflineHomePage extends StatelessWidget {
                                                 .collection('offline')
                                                 .document(offlineTenants[index])
                                                 .updateData(
-                                                {'address': address});
+                                                    {'address': address});
                                             BotToast.showSimpleNotification(
                                                 title:
-                                                'Address updated successfully');
+                                                    'Address updated successfully');
                                           },
                                         ),
                                         Padding(
@@ -217,23 +212,23 @@ class OfflineHomePage extends StatelessWidget {
                                           child: InternationalPhoneNumberInput(
                                             hintText: 'Phone Number',
                                             initialValue:
-                                            PhoneNumber(isoCode: 'IN'),
+                                                PhoneNumber(isoCode: 'IN'),
                                             onInputChanged: (phoneNum) =>
-                                            phoneNo = phoneNum,
+                                                phoneNo = phoneNum,
                                             onSubmit: () {
                                               myDoc()
                                                   .collection('offline')
                                                   .document(
-                                                  offlineTenants[index])
+                                                      offlineTenants[index])
                                                   .updateData(
                                                 {
                                                   'phoneNum':
-                                                  phoneNo.phoneNumber
+                                                      phoneNo.phoneNumber
                                                 },
                                               );
                                               BotToast.showSimpleNotification(
                                                   title:
-                                                  'Phone number updated successfully');
+                                                      'Phone number updated successfully');
                                               Navigator.pop(context);
                                             },
                                           ),
@@ -241,6 +236,12 @@ class OfflineHomePage extends StatelessWidget {
                                       ],
                                     ),
                                     'Enter rent');
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.call, color: Colors.green),
+                              onPressed: () {
+                                launch('tel:${snap.data['phoneNum']}');
                               },
                             ),
                           ],
@@ -289,8 +290,8 @@ class Owner extends StatelessWidget {
         try {
           myDocSnap.data['buildings'].length == 0
               ? BotToast.showSimpleNotification(
-                  title: 'You will be notified when tenant adds you')
-              : BotToast.showSimpleNotification(title: 'Welcome Owner');
+              title: 'You will be notified when tenant adds you')
+              : null;
           return ListView.builder(
             itemCount: myDocSnap.data['buildings'].length,
             itemBuilder: (context, index) {
