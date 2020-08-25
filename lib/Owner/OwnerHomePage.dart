@@ -2,13 +2,9 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
-import 'package:home_manager/Owner/TenantList.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:share/share.dart';
 import 'package:toggle_switch/toggle_switch.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'BuildingCard.dart';
 import 'Subscription.dart';
@@ -54,34 +50,7 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
         child: Icon(Icons.add),
         backgroundColor: Colors.red,
         onPressed: () {
-          !isOffline
-              ? addBuilding(context)
-              : bottomSheet(
-                  context,
-                  CustomTextField(
-                    enabled: true,
-                    hintText: 'Tenant Name',
-                    onSubmitted: (text) {
-                      myDoc().collection('offline').add({
-                        'name': text,
-                        'accCreated': DateTime.now().year,
-                        'rent': null,
-                      }).then((value) {
-                        myDoc().updateData({
-                          'offlineTenants':
-                              FieldValue.arrayUnion([value.documentID]),
-                        });
-                        myDoc()
-                            .collection('offline')
-                            .document(value.documentID)
-                            .collection('payments')
-                            .document('payments')
-                            .setData({'exist': true}, merge: true);
-                      });
-                      Navigator.pop(context);
-                    },
-                  ),
-                  'Add Tenant');
+          !isOffline ? addBuilding(context, false) : addBuilding(context, true);
         },
       ),
       body: StreamBuilder(
@@ -95,14 +64,14 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
                   title: 'You subscription has ended...');
               return Subscription(myDocSnap: doc);
             } else if (isOffline) {
-              return OfflineHomePage();
+              return Owner(isOffline: isOffline);
             } else if (doc.data['requests'].length != 0) {
               BotToast.showSimpleNotification(title: 'New Request');
               return Requests();
             } else if (doc.data['upiId'] == null) {
               return Center(child: UpdateUpiTile());
             } else if (doc.data['phoneNum'] != null) {
-              return Owner();
+              return Owner(isOffline: isOffline);
             } else {
               return Center(child: UpdatePhoneNumTile());
             }
@@ -115,193 +84,70 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
   }
 }
 
-class OfflineHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    List offlineTenants;
-    return StreamBuilder(
-      stream: myDoc().snapshots(),
-      builder: (context, snap) {
-        try {
-          offlineTenants = snap.data['offlineTenants'];
-          return ListView.builder(
-            shrinkWrap: true,
-            itemCount: offlineTenants.length,
-            itemBuilder: (context, index) {
-              return StreamBuilder(
-                stream: myDoc()
-                    .collection('offline')
-                    .document(offlineTenants[index])
-                    .snapshots(),
-                builder: (context, snap) {
-                  try {
-                    return Card(
-                      elevation: 10,
-                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return MonthlyPayments(
-                                  tenantSnap: snap,
-                                  isTenant: false,
-                                  isOffline: true,
-                                  offlineTenantUid: offlineTenants[index],
-                                );
-                              },
-                            ),
-                          );
-                        },
-                        subtitle: Text(snap.data['address'] ?? 'null'),
-                        title: Text(
-                            snap.data['name'] + '   (₹${snap.data['rent']})'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                              ),
-                              onPressed: () => onDelete(context,
-                                  offlineTenants[index], '', snap, true),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit,
-                                color: Colors.blue,
-                              ),
-                              onPressed: () {
-                                PhoneNumber phoneNo;
-                                bottomSheet(
-                                    context,
-                                    Column(
-                                      children: <Widget>[
-                                        CustomTextField(
-                                          enabled: true,
-                                          hintText: 'Tenant Rent',
-                                          onSubmitted: (rent) {
-                                            myDoc()
-                                                .collection('offline')
-                                                .document(offlineTenants[index])
-                                                .updateData({'rent': rent});
-                                            BotToast.showSimpleNotification(
-                                                title:
-                                                    'Rent updated successfully');
-                                          },
-                                        ),
-                                        CustomTextField(
-                                          enabled: true,
-                                          hintText: 'Tenant Address',
-                                          onSubmitted: (address) {
-                                            myDoc()
-                                                .collection('offline')
-                                                .document(offlineTenants[index])
-                                                .updateData(
-                                                    {'address': address});
-                                            BotToast.showSimpleNotification(
-                                                title:
-                                                    'Address updated successfully');
-                                          },
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 20, vertical: 20),
-                                          child: InternationalPhoneNumberInput(
-                                            hintText: 'Phone Number',
-                                            initialValue:
-                                                PhoneNumber(isoCode: 'IN'),
-                                            onInputChanged: (phoneNum) =>
-                                                phoneNo = phoneNum,
-                                            onSubmit: () {
-                                              myDoc()
-                                                  .collection('offline')
-                                                  .document(
-                                                      offlineTenants[index])
-                                                  .updateData(
-                                                {
-                                                  'phoneNum':
-                                                      phoneNo.phoneNumber
-                                                },
-                                              );
-                                              BotToast.showSimpleNotification(
-                                                  title:
-                                                      'Phone number updated successfully');
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    'Enter rent');
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.call, color: Colors.green),
-                              onPressed: () {
-                                launch('tel:${snap.data['phoneNum']}');
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } catch (e) {
-                    return Container();
-                  }
-                },
-              );
-            },
-          );
-        } catch (e) {
-          return Container();
-        }
-      },
-    );
-  }
-}
-
-addBuilding(context) {
+addBuilding(context, isOffline) {
   bottomSheet(
       context,
       CustomTextField(
         enabled: true,
         hintText: 'ex: Building-1',
         onSubmitted: (buildingName) {
-          myDoc().updateData({
-            'buildings': FieldValue.arrayUnion([buildingName]),
-            buildingName: [],
-            'buildingsPhoto': {buildingName: null}
-          });
-          Navigator.of(context).pop();
+          !isOffline
+              ? myDoc().updateData({
+                  'buildings': FieldValue.arrayUnion([buildingName]),
+                  buildingName: [],
+                  'buildingsPhoto': {buildingName: null}
+                })
+              : myDoc().updateData({
+                  'offlineBuildings': FieldValue.arrayUnion([buildingName]),
+                  buildingName: [],
+                  'buildingsPhoto': {buildingName: null}
+                });
         },
       ),
       'Add Building');
 }
 
 class Owner extends StatelessWidget {
+  final isOffline;
+
+  Owner({this.isOffline});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: myDoc().snapshots(),
       builder: (context, myDocSnap) {
         try {
-          myDocSnap.data['buildings'].length == 0
-              ? BotToast.showSimpleNotification(
-              title: 'You will be notified when tenant adds you')
-              : null;
-          return ListView.builder(
-            itemCount: myDocSnap.data['buildings'].length,
-            itemBuilder: (context, index) {
-              print(myDocSnap.data['buildings'][0]);
-              return BuildingsCard(
-                buildingName: myDocSnap.data['buildings'][index],
-                myDocSnap: myDocSnap,
-              );
-            },
-          );
+          if (!isOffline) {
+            return myDocSnap.data['buildings'].length == 0
+                ? BotToast.showSimpleNotification(
+                title: 'You will be notified when tenant adds you')
+                : ListView.builder(
+              itemCount: myDocSnap.data['buildings'].length,
+              itemBuilder: (context, index) {
+                return BuildingsCard(
+                  buildingName: myDocSnap.data['buildings'][index],
+                  myDocSnap: myDocSnap,
+                  isOffline: isOffline,
+                );
+              },
+            );
+          } else {
+            return myDocSnap.data['offlineBuildings'].length == 0
+                ? BotToast.showSimpleNotification(
+                title: 'No offline tenants, Add one...')
+                : ListView.builder(
+              itemCount: myDocSnap.data['offlineBuildings'].length,
+              itemBuilder: (context, index) {
+                print(myDocSnap.data['offlineBuildings'][index]);
+                return BuildingsCard(
+                  buildingName: myDocSnap.data['offlineBuildings'][index],
+                  myDocSnap: myDocSnap,
+                  isOffline: isOffline,
+                );
+              },
+            );
+          }
         } catch (e) {
           return Container();
         }

@@ -13,8 +13,9 @@ import 'TenantList.dart';
 class BuildingsCard extends StatelessWidget {
   final String buildingName;
   final AsyncSnapshot myDocSnap;
+  final bool isOffline;
 
-  const BuildingsCard({this.buildingName, this.myDocSnap});
+  BuildingsCard({this.buildingName, this.myDocSnap, this.isOffline});
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +35,19 @@ class BuildingsCard extends StatelessWidget {
               subtitle:
                   Text('Tenants : ${myDocSnap.data[buildingName].length}'),
               trailing: IconButton(
-                  icon: Icon(
-                    Icons.add,
-                    color: Colors.grey,
+                icon: Icon(
+                  Icons.add,
+                  color: Colors.grey,
+                ),
+                onPressed: () => bottomSheet(
+                  context,
+                  AddTenant(
+                    buildingName: buildingName,
+                    isOffline: isOffline,
                   ),
-                  onPressed: () => bottomSheet(
-                        context,
-                        AddTenant(buildingName: buildingName),
-                        'Add Tenant',
-                      )),
+                  'Add Tenant',
+                ),
+              ),
               leading: GestureDetector(
                 onTap: () {
                   Navigator.of(context)
@@ -82,22 +87,47 @@ class BuildingsCard extends StatelessWidget {
                               child: Text('Delete Now'),
                               color: Colors.red,
                               onPressed: () async {
-                                List buildings;
-                                await myDoc().get().then((value) =>
-                                buildings = value.data[buildingName]);
-                                buildings.forEach((tenantUid) {
-                                  updateDoc({'homeId': null, 'rent': null},
-                                      'users/$tenantUid');
-                                });
-                                myDoc().updateData({
-                                  'buildingsPhoto':
-                                  FieldValue.arrayRemove([buildingName]),
-                                  'buildings':
-                                  FieldValue.arrayRemove([buildingName]),
-                                  'userCount':
-                                  FieldValue.arrayRemove(buildings),
-                                  buildingName: FieldValue.delete(),
-                                }).then((value) {
+                                if (!isOffline) {
+                                  List buildings;
+                                  await myDoc().get().then((value) =>
+                                  buildings = value.data[buildingName]);
+                                  buildings.forEach((tenantUid) {
+                                    updateDoc({'homeId': null, 'rent': null},
+                                        'users/$tenantUid');
+                                  });
+                                  myDoc().updateData({
+                                    'buildings':
+                                    FieldValue.arrayRemove([buildingName]),
+                                    'userCount':
+                                    FieldValue.arrayRemove(buildings),
+                                    buildingName: FieldValue.delete(),
+                                  }).then((value) {
+                                    FirebaseStorage.instance
+                                        .ref()
+                                        .child(
+                                        'profiles/${Injector
+                                            .get<UserDetails>()
+                                            .uid}$buildingName.png')
+                                        .delete();
+                                  });
+                                } else {
+                                  List buildings;
+                                  await myDoc().get().then((value) =>
+                                  buildings = value.data[buildingName]);
+                                  buildings.forEach((tenantUid) {
+                                    myDoc()
+                                        .collection('offline')
+                                        .document(tenantUid)
+                                        .delete();
+                                  });
+                                  myDoc().updateData({
+                                    'offlineBuildings':
+                                    FieldValue.arrayRemove(
+                                        [buildingName]),
+                                    'offlineTenants':
+                                    FieldValue.arrayRemove(buildings),
+                                    buildingName: FieldValue.delete(),
+                                  });
                                   FirebaseStorage.instance
                                       .ref()
                                       .child(
@@ -105,7 +135,8 @@ class BuildingsCard extends StatelessWidget {
                                           .get<UserDetails>()
                                           .uid}$buildingName.png')
                                       .delete();
-                                });
+                                  Navigator.pop(context);
+                                }
                               },
                             ),
                           ],
@@ -123,18 +154,19 @@ class BuildingsCard extends StatelessWidget {
                         children: <Widget>[
                           TenantList(
                             buildingName: buildingName,
+                            isOffline: isOffline,
                           ),
                           IconButton(
                             icon: Icon(Icons.add),
-                            onPressed: () {
-                              bottomSheet(
-                                context,
-                                AddTenant(
-                                  buildingName: buildingName,
+                            onPressed: () =>
+                                bottomSheet(
+                                  context,
+                                  AddTenant(
+                                    buildingName: buildingName,
+                                    isOffline: isOffline,
+                                  ),
+                                  'Add Tenant',
                                 ),
-                                'Enter tenant phone number',
-                              );
-                            },
                           ),
                         ],
                       ),
@@ -157,12 +189,16 @@ PhoneNumber phoneNo;
 
 class AddTenant extends StatelessWidget {
   final buildingName;
+  final isOffline;
 
-  AddTenant({this.buildingName});
+  AddTenant({this.buildingName, this.isOffline});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    TextEditingController nameController = TextEditingController();
+    TextEditingController rentController = TextEditingController();
+    return !isOffline
+        ? Padding(
       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
       child: InternationalPhoneNumberInput(
         initialValue: PhoneNumber(
@@ -172,50 +208,116 @@ class AddTenant extends StatelessWidget {
         ),
         hintText: "Phone Number",
         onInputChanged: (phone) => phoneNo = phone,
-        onSubmit: () => addTenant(context, buildingName),
+        onSubmit: () => addTenantOnline(context, buildingName),
       ),
+    )
+        : Column(
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          child: TextFormField(
+            controller: nameController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Enter tenant name',
+              labelText: 'Name',
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          child: TextFormField(
+            controller: rentController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Enter tenant rent',
+              labelText: 'Rent',
+            ),
+            keyboardType: TextInputType.numberWithOptions(),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: InternationalPhoneNumberInput(
+            hintText: 'Phone Number',
+            initialValue: PhoneNumber(isoCode: 'IN'),
+            onInputChanged: (phoneNum) => phoneNo = phoneNum,
+            onSubmit: () {},
+          ),
+        ),
+        MaterialButton(
+          color: Colors.deepOrange,
+          child: Text("Save"),
+          onPressed: () {
+            if (nameController.text.isEmpty ||
+                rentController.text.isEmpty) {
+              BotToast.showSimpleNotification(
+                  title: 'Please fill up the empty fields');
+            } else {
+              myDoc().collection('offline').add({
+                'name': nameController.text,
+                'phoneNum': phoneNo.phoneNumber,
+                'rent': rentController.text,
+                'accCreated': DateTime
+                    .now()
+                    .year
+              }).then((value) {
+                myDoc().updateData({
+                  'offlineTenants':
+                  FieldValue.arrayUnion([value.documentID]),
+                  buildingName: FieldValue.arrayUnion([value.documentID])
+                });
+                value
+                    .collection('payments')
+                    .document('payments')
+                    .setData({'docExist': true});
+              });
+              Navigator.pop(context);
+            }
+          },
+        )
+      ],
     );
   }
 }
 
-addTenant(context, buildingName) {
-  if (phoneNo.phoneNumber == Injector
-      .get<UserDetails>()
-      .phoneNum) {
-    BotToast.showSimpleNotification(
-        title: 'You cannot enter your phone number');
-    Navigator.of(context).pop();
-  } else {
-    Firestore.instance
-        .collection('users')
-        .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
-        .getDocuments()
-        .then((docs) {
-      if (docs.documents
+addTenantOnline(context, buildingName) {
+  Firestore.instance
+      .collection('users')
+      .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
+      .getDocuments()
+      .then((docs) {
+    if (docs.documents.length == 0) {
+      BotToast.showSimpleNotification(
+          title: 'Tenant\'s phone isn\'t registered');
+    } else if (docs.documents
+        .elementAt(0)
+        .data['homeId'] != null) {
+      BotToast.showSimpleNotification(title: 'Tenant is already under a owner');
+    } else if (docs.documents.first.data['uid'] ==
+        Injector
+            .get<UserDetails>()
+            .uid) {
+      BotToast.showSimpleNotification(
+          title: 'You cannot enter your phone number');
+    } else if (docs.documents.length != 0) {
+      var tenantDoc = docs.documents
           .elementAt(0)
-          .data['homeId'] != null) {
-        BotToast.showSimpleNotification(
-            title: 'Tenant is already under a owner');
-      } else if (docs.documents.length != 0) {
-        var tenantDoc = docs.documents
-            .elementAt(0)
-            .reference;
-        tenantDoc.updateData({
-          'homeId': Injector
-              .get<UserDetails>()
-              .uid,
-        });
-        myDoc().updateData({
-          buildingName: FieldValue.arrayUnion([tenantDoc.documentID]),
-          'userCount': FieldValue.arrayUnion([tenantDoc.documentID])
-        });
-        BotToast.showSimpleNotification(
-            title: 'Waiting for owner to accept your request');
-        Navigator.pop(context);
-      } else {
-        BotToast.showSimpleNotification(
-            title: 'Tenant\'s phone isn\'t registered');
-      }
-    });
-  }
+          .reference;
+      tenantDoc.updateData({
+        'homeId': Injector
+            .get<UserDetails>()
+            .uid,
+      });
+      myDoc().updateData({
+        buildingName: FieldValue.arrayUnion([tenantDoc.documentID]),
+        'userCount': FieldValue.arrayUnion([tenantDoc.documentID]),
+        'buildingsPhoto': {buildingName: null}
+      });
+      BotToast.showSimpleNotification(
+          title: 'Waiting for owner to accept your request');
+      Navigator.pop(context);
+    }
+  });
 }

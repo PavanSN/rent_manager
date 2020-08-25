@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
@@ -7,8 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 class TenantList extends StatelessWidget {
   final String buildingName;
   final rentAmnt;
+  final isOffline;
 
-  TenantList({this.buildingName, this.rentAmnt});
+  TenantList({this.buildingName, this.rentAmnt, this.isOffline});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class TenantList extends StatelessWidget {
               return TenantTile(
                 tenantUid: tenantUids[index],
                 buildingName: buildingName,
+                isOffline: isOffline,
               );
             },
           );
@@ -39,26 +42,22 @@ class TenantTile extends StatelessWidget {
   final tenantUid;
   final buildingName;
   final rentAmnt;
+  final isOffline;
 
-  const TenantTile({this.tenantUid, this.buildingName, this.rentAmnt});
+  const TenantTile(
+      {this.tenantUid, this.buildingName, this.rentAmnt, this.isOffline});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Firestore.instance.document('users/$tenantUid').snapshots(),
+      stream: !isOffline
+          ? Firestore.instance.document('users/$tenantUid').snapshots()
+          : myDoc().collection('offline').document(tenantUid).snapshots(),
       builder: (context, tenantSnap) {
         try {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: ListTile(
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: Image.network(
-                  tenantSnap.data['photoUrl'],
-                  height: 50,
-                  width: 50,
-                ),
-              ),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -66,8 +65,9 @@ class TenantTile extends StatelessWidget {
                       return MonthlyPayments(
                         tenantSnap: tenantSnap,
                         isTenant: false,
-                        isOffline: false,
+                        isOffline: isOffline,
                         rentAmnt: rentAmnt,
+                        offlineTenantUid: tenantUid,
                       );
                     },
                   ),
@@ -77,6 +77,7 @@ class TenantTile extends StatelessWidget {
                 tenantSnap: tenantSnap,
                 tenantUid: tenantUid,
                 buildingName: buildingName,
+                isOffline: isOffline,
               ),
               title: Text(tenantSnap.data['name']),
               subtitle: Text('Rent = ${tenantSnap.data['rent']}'),
@@ -94,8 +95,10 @@ class TenantTileTrailingBtn extends StatelessWidget {
   final tenantUid;
   final tenantSnap;
   final buildingName;
+  final isOffline;
 
-  TenantTileTrailingBtn({this.tenantSnap, this.tenantUid, this.buildingName});
+  TenantTileTrailingBtn(
+      {this.tenantSnap, this.tenantUid, this.buildingName, this.isOffline});
 
   @override
   Widget build(BuildContext context) {
@@ -114,30 +117,73 @@ class TenantTileTrailingBtn extends StatelessWidget {
             color: Colors.red,
           ),
           onPressed: () =>
-              onDelete(context, tenantUid, buildingName, tenantSnap, false),
+              onDelete(context, tenantUid, buildingName, tenantSnap, isOffline),
         ),
         IconButton(
             color: Colors.blue,
             icon: Icon(Icons.edit),
             onPressed: () {
-              showDialog(
-                context: context,
-                child: AlertDialog(
-                  title: Text(
-                    'Edit Rent',
-                    textAlign: TextAlign.center,
+              TextEditingController rentController = TextEditingController();
+              bottomSheet(
+                  context,
+                  Column(
+                    children: <Widget>[
+                      Padding(
+                        padding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                        child: TextFormField(
+                          controller: rentController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Enter tenant rent',
+                            labelText: 'Rent',
+                          ),
+                          keyboardType: TextInputType.numberWithOptions(),
+                        ),
+                      ),
+                      MaterialButton(
+                        color: Colors.deepOrange,
+                        child: Text("Save"),
+                        onPressed: () {
+                          if (rentController.text.isEmpty) {
+                            BotToast.showSimpleNotification(
+                                title: 'Please fill up the empty fields');
+                          } else {
+                            isOffline
+                                ? myDoc()
+                                .collection('offline')
+                                .document(tenantUid)
+                                .updateData({
+                              'rent': rentController.text,
+                            })
+                                : Firestore.instance
+                                .document('users/$tenantUid')
+                                .updateData({'rent': rentController.text});
+                            Navigator.pop(context);
+                          }
+                        },
+                      )
+                    ],
                   ),
-                  content: CustomTextField(
-                    enabled: true,
-                    hintText: 'Enter Rent Amount',
-                    onSubmitted: (rentAmnt) {
-                      updateDoc({'rent': int.parse(rentAmnt.toString())},
-                          'users/$tenantUid');
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ),
-              );
+                  'Edit Tenant');
+//              showDialog(
+//                context: context,
+//                child: AlertDialog(
+//                  title: Text(
+//                    'Edit Rent',
+//                    textAlign: TextAlign.center,
+//                  ),
+//                  content: CustomTextField(
+//                    enabled: true,
+//                    hintText: 'Enter Rent Amount',
+//                    onSubmitted: (rentAmnt) {
+//                      updateDoc({'rent': int.parse(rentAmnt.toString())},
+//                          'users/$tenantUid');
+//                      Navigator.of(context).pop();
+//                    },
+//                  ),
+//                ),
+//              );
             }),
         IconButton(
           color: Colors.green,
@@ -170,7 +216,8 @@ onDelete(context, tenantUid, buildingName, tenantSnap, isOffline) {
               Navigator.pop(context);
             } else {
               myDoc().updateData({
-                'offlineTenants': FieldValue.arrayRemove([tenantUid])
+                'offlineTenants': FieldValue.arrayRemove([tenantUid]),
+                buildingName: FieldValue.arrayRemove([tenantUid])
               });
               myDoc().collection('offline').document(tenantUid).delete();
               Navigator.pop(context);

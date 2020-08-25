@@ -2,7 +2,6 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/Models/TabPressed.dart';
-import 'package:home_manager/Models/UserDetails.dart';
 import 'package:share/share.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
@@ -68,9 +67,7 @@ class MonthlyPayments extends StatelessWidget {
               return Expanded(
                 flex: 8,
                 child: MonthsWithPaymentTile(
-                  year: Injector
-                      .get<TabPressed>()
-                      .yearPressed,
+                  year: Injector.get<TabPressed>().yearPressed,
                   isTenant: isTenant,
                   tenantSnap: tenantSnap,
                   rentAmnt: rentAmnt,
@@ -217,11 +214,9 @@ class PayTile extends StatelessWidget {
                           .document(
                           'users/${tenantSnap.data['uid']}/payments/payments')
                           .updateData({monthYear: 'paid'})
-                          : Firestore.instance
-                          .document(
-                          'users/${Injector
-                              .get<UserDetails>()
-                              .uid}/offline/$offlineTenantUid/payments/payments')
+                          : myDoc()
+                          .collection('offline')
+                          .document('$offlineTenantUid/payments/payments')
                           .updateData({monthYear: 'paid'});
                       Navigator.pop(context);
                     },
@@ -235,11 +230,9 @@ class PayTile extends StatelessWidget {
                           .document(
                           'users/${tenantSnap.data['uid']}/payments/payments')
                           .updateData({monthYear: FieldValue.delete()})
-                          : Firestore.instance
-                          .document(
-                          'users/${Injector
-                              .get<UserDetails>()
-                              .uid}/offline/$offlineTenantUid/payments/payments')
+                          : myDoc()
+                          .collection('offline')
+                          .document('$offlineTenantUid/payments/payments')
                           .updateData({monthYear: FieldValue.delete()});
                       Navigator.of(context).pop();
                     },
@@ -262,11 +255,9 @@ class PayTile extends StatelessWidget {
               .document(
               'users/${tenantSnap.data['uid']}/payments/payments')
               .snapshots()
-              : Firestore.instance
-              .document(
-              'users/${Injector
-                  .get<UserDetails>()
-                  .uid}/offline/$offlineTenantUid/payments/payments')
+              : myDoc()
+              .collection('offline')
+              .document('$offlineTenantUid/payments/payments')
               .snapshots(),
           builder: (context, paymentDoc) {
             try {

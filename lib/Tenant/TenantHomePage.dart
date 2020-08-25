@@ -100,17 +100,14 @@ class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     try {
-      if (myDocSnap.data['homeId'] != null) {
-        return MonthlyPayments(
-          tenantSnap: myDocSnap,
-          isTenant: true,
-          rentAmnt: myDocSnap.data['rent'],
-          isOffline: false,
-        );
-      } else {
-        return Container();
-      }
+      return MonthlyPayments(
+        tenantSnap: myDocSnap,
+        isTenant: true,
+        rentAmnt: int.parse(myDocSnap.data['rent']),
+        isOffline: false,
+      );
     } catch (e) {
+      print(e);
       return Container();
     }
   }
@@ -142,9 +139,7 @@ class AddOwner extends StatelessWidget {
               .getDocuments()
               .then((docs) {
             if (docs.documents.first.data['uid'] ==
-                Injector
-                    .get<UserDetails>()
-                    .uid) {
+                Injector.get<UserDetails>().uid) {
               BotToast.showSimpleNotification(
                   title: 'You cannot enter your phone number');
               Navigator.of(context).pop();
@@ -155,7 +150,7 @@ class AddOwner extends StatelessWidget {
               var doc = docs.documents.first.reference;
               doc.updateData({
                 'requests':
-                FieldValue.arrayUnion([Injector
+                    FieldValue.arrayUnion([Injector
                     .get<UserDetails>()
                     .uid
                 ])
