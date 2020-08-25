@@ -44,12 +44,11 @@ class PhoneNumVerificationUI extends StatelessWidget {
                     verificationCompleted: (AuthCredential credential) async {
                       Navigator.of(context).pop();
                       Injector.get<UserDetails>().getDetails();
-                      FirebaseAuth.instance.currentUser().then((value) {
-                        value.updatePhoneNumberCredential(credential);
-                        myDoc().updateData({'phoneNum': phoneNo.phoneNumber});
-                        BotToast.showSimpleNotification(
-                            title: 'Phone verification successfully completed');
-                      });
+                      FirebaseAuth.instance.currentUser
+                          .updatePhoneNumber(credential);
+                      myDoc().update({'phoneNum': phoneNo.phoneNumber});
+                      BotToast.showSimpleNotification(
+                          title: 'Phone verification successfully completed');
                     },
                     verificationFailed: (error) {
                       BotToast.showSimpleNotification(title: error.message);
@@ -65,20 +64,16 @@ class PhoneNumVerificationUI extends StatelessWidget {
                             content: PinFieldAutoFill(
                               onCodeSubmitted: (otp) async {
                                 AuthCredential credential =
-                                    PhoneAuthProvider.getCredential(
+                                    PhoneAuthProvider.credential(
                                         verificationId: verId, smsCode: otp);
-                                FirebaseAuth.instance
-                                    .currentUser()
+                                FirebaseAuth.instance.currentUser
+                                    .updatePhoneNumber(credential)
                                     .then((value) {
-                                  value
-                                      .updatePhoneNumberCredential(credential)
-                                      .then((value) {
-                                    myDoc().updateData(
-                                        {'phoneNum': phoneNo.phoneNumber});
-                                  });
-                                  Injector.get<UserDetails>().getDetails();
-                                  Navigator.pop(context);
+                                  myDoc().update(
+                                      {'phoneNum': phoneNo.phoneNumber});
                                 });
+                                Injector.get<UserDetails>().getDetails();
+                                Navigator.pop(context);
                                 Navigator.pop(context);
                               },
                             ),

@@ -210,14 +210,14 @@ class PayTile extends StatelessWidget {
                     child: Text('Paid'),
                     onPressed: () {
                       !isOffline
-                          ? Firestore.instance
-                          .document(
-                          'users/${tenantSnap.data['uid']}/payments/payments')
-                          .updateData({monthYear: 'paid'})
+                          ? FirebaseFirestore.instance
+                              .doc(
+                                  'users/${tenantSnap.data['uid']}/payments/payments')
+                              .update({monthYear: 'paid'})
                           : myDoc()
-                          .collection('offline')
-                          .document('$offlineTenantUid/payments/payments')
-                          .updateData({monthYear: 'paid'});
+                              .collection('offline')
+                              .doc('$offlineTenantUid/payments/payments')
+                              .update({monthYear: 'paid'});
                       Navigator.pop(context);
                     },
                   ),
@@ -226,14 +226,14 @@ class PayTile extends StatelessWidget {
                     child: Text('Not paid'),
                     onPressed: () {
                       !isOffline
-                          ? Firestore.instance
-                          .document(
+                          ? FirebaseFirestore.instance
+                          .doc(
                           'users/${tenantSnap.data['uid']}/payments/payments')
-                          .updateData({monthYear: FieldValue.delete()})
+                          .update({monthYear: FieldValue.delete()})
                           : myDoc()
                           .collection('offline')
-                          .document('$offlineTenantUid/payments/payments')
-                          .updateData({monthYear: FieldValue.delete()});
+                          .doc('$offlineTenantUid/payments/payments')
+                          .update({monthYear: FieldValue.delete()});
                       Navigator.of(context).pop();
                     },
                   )
@@ -249,15 +249,15 @@ class PayTile extends StatelessWidget {
         ),
         trailing: StreamBuilder(
           stream: isTenant
-              ? streamDoc('users/${myDoc().documentID}/payments/payments')
+              ? streamDoc('users/${myDoc().id}/payments/payments')
               : !isOffline
-              ? Firestore.instance
-              .document(
+              ? FirebaseFirestore.instance
+              .doc(
               'users/${tenantSnap.data['uid']}/payments/payments')
               .snapshots()
               : myDoc()
               .collection('offline')
-              .document('$offlineTenantUid/payments/payments')
+              .doc('$offlineTenantUid/payments/payments')
               .snapshots(),
           builder: (context, paymentDoc) {
             try {
@@ -292,10 +292,10 @@ class PayButton extends StatelessWidget {
           var rent = doc.data['rent'];
           var homeId = doc.data['homeId'];
           var upiId;
-          Firestore.instance
-              .document('users/$homeId')
+          FirebaseFirestore.instance
+              .doc('users/$homeId')
               .get()
-              .then((value) => upiId = value.data['upiId']);
+              .then((value) => upiId = value.data()['upiId']);
           return RaisedButton(
             onPressed: () {
               bottomSheet(
@@ -336,7 +336,7 @@ class UpdatePayment extends StatelessWidget {
             child: Text('Paid'),
             color: Colors.green,
             onPressed: () {
-              myDoc().collection('payments').document('payments').updateData({
+              myDoc().collection('payments').doc('payments').update({
                 monthYear: 'paid',
               }).then((_) {
                 Navigator.pop(context);
@@ -346,7 +346,7 @@ class UpdatePayment extends StatelessWidget {
             child: Text('Not Paid'),
             color: Colors.red,
             onPressed: () {
-              myDoc().collection('payments').document('payments').updateData({
+              myDoc().collection('payments').doc('payments').update({
                 monthYear: null,
               }).then((_) {
                 Navigator.pop(context);

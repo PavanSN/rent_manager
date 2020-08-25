@@ -70,7 +70,7 @@ class FloatingBtnFcn extends StatelessWidget {
                     'Enter Owner Phone Number');
           } else {
             futureDoc('users/${myDocSnap.data['homeId']}')
-                .then((value) => launch('tel:${value.data['phoneNum']}'));
+                .then((value) => launch('tel:${value.data()['phoneNum']}'));
           }
         },
       );
@@ -133,27 +133,24 @@ class AddOwner extends StatelessWidget {
         hintText: "Phone Number",
         onInputChanged: (phone) => phoneNo = phone,
         onSubmit: () {
-          Firestore.instance
+          FirebaseFirestore.instance
               .collection('users')
               .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
-              .getDocuments()
+              .get()
               .then((docs) {
-            if (docs.documents.first.data['uid'] ==
+            if (docs.docs.first.data()['uid'] ==
                 Injector.get<UserDetails>().uid) {
               BotToast.showSimpleNotification(
                   title: 'You cannot enter your phone number');
               Navigator.of(context).pop();
-            } else if (docs.documents.length == 0) {
+            } else if (docs.docs.length == 0) {
               BotToast.showSimpleNotification(
                   title: 'Owner\'s phone isn\'t registered');
             } else {
-              var doc = docs.documents.first.reference;
-              doc.updateData({
+              var doc = docs.docs.first.reference;
+              doc.update({
                 'requests':
-                    FieldValue.arrayUnion([Injector
-                    .get<UserDetails>()
-                    .uid
-                ])
+                    FieldValue.arrayUnion([Injector.get<UserDetails>().uid])
               });
               BotToast.showSimpleNotification(
                   title: 'Waiting for owner to accept your request');

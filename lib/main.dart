@@ -42,7 +42,7 @@ class RentManager extends StatelessWidget {
           builder: BotToastInit(),
           navigatorObservers: [BotToastNavigatorObserver()],
           home: StreamBuilder(
-            stream: FirebaseAuth.instance.onAuthStateChanged,
+            stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, user) {
               return user.hasData ? MainPage() : GoogleSignInPage();
             },

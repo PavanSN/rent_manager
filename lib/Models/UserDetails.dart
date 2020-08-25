@@ -14,15 +14,11 @@ class UserDetails extends StatesRebuilder {
   }
 
   getDetails() {
-    FirebaseAuth.instance.currentUser().then((data) {
-      name = data.displayName;
-      photoUrl = data.photoUrl;
-      uid = data.uid;
-      phoneNum = data.phoneNumber;
-      BotToast.showSimpleNotification(title: 'Profile Updated');
-      Firestore.instance
-          .document('users/$uid')
-          .updateData({'photoUrl': photoUrl});
-    });
+    name = FirebaseAuth.instance.currentUser.displayName;
+    photoUrl = FirebaseAuth.instance.currentUser.photoURL;
+    uid = FirebaseAuth.instance.currentUser.uid;
+    phoneNum = FirebaseAuth.instance.currentUser.phoneNumber;
+    BotToast.showSimpleNotification(title: 'Profile Updated');
+    FirebaseFirestore.instance.doc('users/$uid').update({'photoUrl': photoUrl});
   }
 }

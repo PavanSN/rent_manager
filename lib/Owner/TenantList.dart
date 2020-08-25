@@ -51,8 +51,8 @@ class TenantTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: !isOffline
-          ? Firestore.instance.document('users/$tenantUid').snapshots()
-          : myDoc().collection('offline').document(tenantUid).snapshots(),
+          ? FirebaseFirestore.instance.doc('users/$tenantUid').snapshots()
+          : myDoc().collection('offline').doc(tenantUid).snapshots(),
       builder: (context, tenantSnap) {
         try {
           return Padding(
@@ -151,14 +151,14 @@ class TenantTileTrailingBtn extends StatelessWidget {
                           } else {
                             isOffline
                                 ? myDoc()
-                                .collection('offline')
-                                .document(tenantUid)
-                                .updateData({
-                              'rent': rentController.text,
-                            })
-                                : Firestore.instance
-                                .document('users/$tenantUid')
-                                .updateData({'rent': rentController.text});
+                                    .collection('offline')
+                                    .doc(tenantUid)
+                                    .update({
+                                    'rent': rentController.text,
+                                  })
+                                : FirebaseFirestore.instance
+                                    .doc('users/$tenantUid')
+                                    .update({'rent': rentController.text});
                             Navigator.pop(context);
                           }
                         },
@@ -209,17 +209,17 @@ onDelete(context, tenantUid, buildingName, tenantSnap, isOffline) {
           onPressed: () {
             if (!isOffline) {
               updateDoc({'homeId': null, 'rent': null}, 'users/$tenantUid');
-              myDoc().updateData({
+              myDoc().update({
                 buildingName: FieldValue.arrayRemove([tenantUid]),
                 'userCount': FieldValue.arrayRemove([tenantUid]),
               });
               Navigator.pop(context);
             } else {
-              myDoc().updateData({
+              myDoc().update({
                 'offlineTenants': FieldValue.arrayRemove([tenantUid]),
                 buildingName: FieldValue.arrayRemove([tenantUid])
               });
-              myDoc().collection('offline').document(tenantUid).delete();
+              myDoc().collection('offline').doc(tenantUid).delete();
               Navigator.pop(context);
             }
           },

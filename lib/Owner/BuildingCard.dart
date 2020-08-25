@@ -90,16 +90,16 @@ class BuildingsCard extends StatelessWidget {
                                 if (!isOffline) {
                                   List buildings;
                                   await myDoc().get().then((value) =>
-                                  buildings = value.data[buildingName]);
+                                      buildings = value.data()[buildingName]);
                                   buildings.forEach((tenantUid) {
                                     updateDoc({'homeId': null, 'rent': null},
                                         'users/$tenantUid');
                                   });
-                                  myDoc().updateData({
+                                  myDoc().update({
                                     'buildings':
-                                    FieldValue.arrayRemove([buildingName]),
+                                        FieldValue.arrayRemove([buildingName]),
                                     'userCount':
-                                    FieldValue.arrayRemove(buildings),
+                                        FieldValue.arrayRemove(buildings),
                                     buildingName: FieldValue.delete(),
                                   }).then((value) {
                                     FirebaseStorage.instance
@@ -113,17 +113,16 @@ class BuildingsCard extends StatelessWidget {
                                 } else {
                                   List buildings;
                                   await myDoc().get().then((value) =>
-                                  buildings = value.data[buildingName]);
+                                  buildings = value.data()[buildingName]);
                                   buildings.forEach((tenantUid) {
                                     myDoc()
                                         .collection('offline')
-                                        .document(tenantUid)
+                                        .doc(tenantUid)
                                         .delete();
                                   });
-                                  myDoc().updateData({
+                                  myDoc().update({
                                     'offlineBuildings':
-                                    FieldValue.arrayRemove(
-                                        [buildingName]),
+                                    FieldValue.arrayRemove([buildingName]),
                                     'offlineTenants':
                                     FieldValue.arrayRemove(buildings),
                                     buildingName: FieldValue.delete(),
@@ -263,15 +262,15 @@ class AddTenant extends StatelessWidget {
                     .now()
                     .year
               }).then((value) {
-                myDoc().updateData({
+                myDoc().update({
                   'offlineTenants':
-                  FieldValue.arrayUnion([value.documentID]),
-                  buildingName: FieldValue.arrayUnion([value.documentID])
+                  FieldValue.arrayUnion([value.id]),
+                  buildingName: FieldValue.arrayUnion([value.id])
                 });
                 value
                     .collection('payments')
-                    .document('payments')
-                    .setData({'docExist': true});
+                    .doc('payments')
+                    .set({'docExist': true});
               });
               Navigator.pop(context);
             }
@@ -283,36 +282,34 @@ class AddTenant extends StatelessWidget {
 }
 
 addTenantOnline(context, buildingName) {
-  Firestore.instance
+  FirebaseFirestore.instance
       .collection('users')
       .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
-      .getDocuments()
+      .get()
       .then((docs) {
-    if (docs.documents.length == 0) {
+    if (docs.docs.length == 0) {
       BotToast.showSimpleNotification(
           title: 'Tenant\'s phone isn\'t registered');
-    } else if (docs.documents
-        .elementAt(0)
-        .data['homeId'] != null) {
+    } else if (docs.docs.elementAt(0).data()['homeId'] != null) {
       BotToast.showSimpleNotification(title: 'Tenant is already under a owner');
-    } else if (docs.documents.first.data['uid'] ==
+    } else if (docs.docs.first.data()['uid'] ==
         Injector
             .get<UserDetails>()
             .uid) {
       BotToast.showSimpleNotification(
           title: 'You cannot enter your phone number');
-    } else if (docs.documents.length != 0) {
-      var tenantDoc = docs.documents
+    } else if (docs.docs.length != 0) {
+      var tenantDoc = docs.docs
           .elementAt(0)
           .reference;
-      tenantDoc.updateData({
+      tenantDoc.update({
         'homeId': Injector
             .get<UserDetails>()
             .uid,
       });
-      myDoc().updateData({
-        buildingName: FieldValue.arrayUnion([tenantDoc.documentID]),
-        'userCount': FieldValue.arrayUnion([tenantDoc.documentID]),
+      myDoc().update({
+        buildingName: FieldValue.arrayUnion([tenantDoc.id]),
+        'userCount': FieldValue.arrayUnion([tenantDoc.id]),
         'buildingsPhoto': {buildingName: null}
       });
       BotToast.showSimpleNotification(

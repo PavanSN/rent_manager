@@ -47,12 +47,11 @@ class PayUsingUpi {
 
   handleSuccess(String txnId, String monthYear, bool isTenant, int expDate) {
     if (isTenant) {
-      Firestore.instance
-          .document(
-              'users/${Injector.get<UserDetails>().uid}/payments/payments')
-          .updateData({monthYear: txnId});
+      FirebaseFirestore.instance
+          .doc('users/${Injector.get<UserDetails>().uid}/payments/payments')
+          .update({monthYear: txnId});
     } else {
-      myDoc().updateData({
+      myDoc().update({
         'expDate': expDate,
       });
     }

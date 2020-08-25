@@ -6,7 +6,7 @@ class SignIn {
     GoogleSignInAccount googleSignInAccount = await GoogleSignIn().signIn();
     GoogleSignInAuthentication signInAuthentication =
         await googleSignInAccount.authentication;
-    AuthCredential credential = GoogleAuthProvider.getCredential(
+    AuthCredential credential = GoogleAuthProvider.credential(
         idToken: signInAuthentication.idToken,
         accessToken: signInAuthentication.accessToken);
     FirebaseAuth.instance.signInWithCredential(credential);

@@ -87,7 +87,7 @@ class NewTenantRequestCard extends StatelessWidget {
                           child: Text('Reject'),
                           color: Colors.red,
                           onPressed: () {
-                            myDoc().updateData({
+                            myDoc().update({
                               'requests': FieldValue.arrayRemove([requesterUid])
                             });
                           },
@@ -109,7 +109,7 @@ class NewTenantRequestCard extends StatelessWidget {
 
 onAccept(context, requesterUid) {
   myDoc().get().then((value) {
-    List buildings = value.data['buildings'];
+    List buildings = value.data()['buildings'];
     bottomSheet(
         context,
         Column(
@@ -118,7 +118,7 @@ onAccept(context, requesterUid) {
               enabled: true,
               hintText: 'ex: Building-1',
               onSubmitted: (buildingName) {
-                myDoc().updateData({
+                myDoc().update({
                   'buildings': FieldValue.arrayUnion([buildingName]),
                   buildingName: FieldValue.arrayUnion([requesterUid]),
                   'requests': FieldValue.arrayRemove([requesterUid]),
@@ -145,7 +145,7 @@ onAccept(context, requesterUid) {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      myDoc().updateData({
+                      myDoc().update({
                         buildings[index]: FieldValue.arrayUnion([requesterUid]),
                         'requests': FieldValue.arrayRemove([requesterUid]),
                         'userCount': FieldValue.arrayUnion([requesterUid]),

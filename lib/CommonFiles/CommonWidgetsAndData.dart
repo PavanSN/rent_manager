@@ -4,20 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:home_manager/Models/UserDetails.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
-createDoc(data, path) => Firestore.instance.document(path).setData(data);
+createDoc(data, path) => FirebaseFirestore.instance.doc(path).set(data);
 
-deleteDoc(path) => Firestore.instance.document(path).delete();
+deleteDoc(path) => FirebaseFirestore.instance.doc(path).delete();
 
-updateDoc(data, path) => Firestore.instance.document(path).updateData(data);
+updateDoc(data, path) => FirebaseFirestore.instance.doc(path).update(data);
 
 Stream<DocumentSnapshot> streamDoc(path) =>
-    Firestore.instance.document(path).snapshots();
+    FirebaseFirestore.instance.doc(path).snapshots();
 
 Future<DocumentSnapshot> futureDoc(path) =>
-    Firestore.instance.document(path).get();
+    FirebaseFirestore.instance.doc(path).get();
 
 DocumentReference myDoc() =>
-    Firestore.instance.document('users/${Injector.get<UserDetails>().uid}');
+    FirebaseFirestore.instance.doc('users/${Injector.get<UserDetails>().uid}');
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -26,10 +26,7 @@ class CustomTextField extends StatelessWidget {
   final onSubmitted;
 
   CustomTextField(
-      {this.controller,
-      this.enabled,
-      this.hintText,
-      this.onSubmitted});
+      {this.controller, this.enabled, this.hintText, this.onSubmitted});
 
   @override
   Widget build(BuildContext context) {
