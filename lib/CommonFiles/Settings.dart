@@ -1,10 +1,9 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
 import 'package:home_manager/Models/SignIn.dart';
-import 'package:home_manager/Models/UserDetails.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 class Settings extends StatelessWidget {
   @override
@@ -78,7 +77,7 @@ class UpdateUpiTile extends StatelessWidget {
               onSubmitted: (upiId) {
                 if (upiId.toString().contains('@')) {
                   updateDoc({'upiId': upiId},
-                      'users/${Injector.get<UserDetails>().uid}');
+                      'users/${FirebaseAuth.instance.currentUser.uid}');
                   BotToast.showSimpleNotification(
                       title: 'UPI Updated successfully');
                   Navigator.pop(context);

@@ -2,10 +2,8 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/Models/UserDetails.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:sms_autofill/sms_autofill.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 PhoneNumber phoneNo;
 
@@ -43,10 +41,9 @@ class PhoneNumVerificationUI extends StatelessWidget {
                     timeout: Duration(seconds: 60),
                     verificationCompleted: (AuthCredential credential) async {
                       Navigator.of(context).pop();
-                      Injector.get<UserDetails>().getDetails();
                       FirebaseAuth.instance.currentUser
                           .updatePhoneNumber(credential);
-                      myDoc().update({'phoneNum': phoneNo.phoneNumber});
+                      myDoc.update({'phoneNum': phoneNo.phoneNumber});
                       BotToast.showSimpleNotification(
                           title: 'Phone verification successfully completed');
                     },
@@ -69,10 +66,9 @@ class PhoneNumVerificationUI extends StatelessWidget {
                                 FirebaseAuth.instance.currentUser
                                     .updatePhoneNumber(credential)
                                     .then((value) {
-                                  myDoc().update(
+                                  myDoc.update(
                                       {'phoneNum': phoneNo.phoneNumber});
                                 });
-                                Injector.get<UserDetails>().getDetails();
                                 Navigator.pop(context);
                                 Navigator.pop(context);
                               },

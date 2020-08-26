@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
@@ -54,23 +55,22 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
         },
       ),
       body: StreamBuilder(
-        stream: myDoc().snapshots(),
-        builder: (context, doc) {
+        stream: myDoc.snapshots(),
+        builder: (context, AsyncSnapshot<DocumentSnapshot> doc) {
           try {
-            if (doc.data['expDate'] <= DateTime.now().millisecondsSinceEpoch &&
-                (doc.data['userCount'].length != 0 ||
-                    doc.data['offlineTenants'].length != 0)) {
+            if (doc.data.data()['expDate'] <=
+                    DateTime.now().millisecondsSinceEpoch &&
+                (doc.data.data()['userCount'].length != 0 ||
+                    doc.data.data()['offlineTenants'].length != 0)) {
               BotToast.showSimpleNotification(
                   title: 'You subscription has ended...');
               return Subscription(myDocSnap: doc);
-            } else if (isOffline) {
-              return Owner(isOffline: isOffline);
-            } else if (doc.data['requests'].length != 0) {
+            } else if (doc.data.data()['requests'].length != 0) {
               BotToast.showSimpleNotification(title: 'New Request');
-              return Requests();
-            } else if (doc.data['upiId'] == null) {
+              return Requests(myDocSnap: doc);
+            } else if (doc.data.data()['upiId'] == null) {
               return Center(child: UpdateUpiTile());
-            } else if (doc.data['phoneNum'] != null) {
+            } else if (doc.data.data()['phoneNum'] != null) {
               return Owner(isOffline: isOffline);
             } else {
               return Center(child: UpdatePhoneNumTile());
@@ -85,23 +85,52 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
 }
 
 addBuilding(context, isOffline) {
+  bool isDuplicateBuilding = false;
   bottomSheet(
       context,
       CustomTextField(
         enabled: true,
         hintText: 'ex: Building-1',
         onSubmitted: (buildingName) {
-          !isOffline
-              ? myDoc().updateData({
-                  'buildings': FieldValue.arrayUnion([buildingName]),
-                  buildingName: [],
-                  'buildingsPhoto': {buildingName: null}
-                })
-              : myDoc().updateData({
-                  'offlineBuildings': FieldValue.arrayUnion([buildingName]),
-                  buildingName: [],
-                  'buildingsPhoto': {buildingName: null}
-                });
+          //todo remove update offlineBuidings after blaze plan
+
+          myDoc.get().then((doc) {
+            List onlineBuildings = doc.data()['buildings'];
+            List offlineBuildings = doc.data()['offlineBuildings'];
+            onlineBuildings.forEach((name) {
+              if (buildingName == name) {
+                BotToast.showSimpleNotification(
+                    title: 'Building already exists');
+                isDuplicateBuilding = true;
+              }
+            });
+
+            if (offlineBuildings == null) {
+              updateDoc({'offlineBuildings': []},
+                  'users/${FirebaseAuth.instance.currentUser.uid}');
+            } else {
+              offlineBuildings.forEach((name) {
+                if (buildingName == name) {
+                  BotToast.showSimpleNotification(
+                      title: 'Building already exists');
+                  isDuplicateBuilding = true;
+                }
+              });
+            }
+            if (!isOffline && !isDuplicateBuilding) {
+              myDoc.update({
+                'buildings': FieldValue.arrayUnion([buildingName]),
+                buildingName: [],
+                'buildingsPhoto': {buildingName: null}
+              });
+            } else if (isOffline && !isDuplicateBuilding) {
+              myDoc.update({
+                'offlineBuildings': FieldValue.arrayUnion([buildingName]),
+                buildingName: [],
+                'buildingsPhoto': {buildingName: null}
+              });
+            }
+          });
         },
       ),
       'Add Building');
@@ -115,33 +144,34 @@ class Owner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: myDoc().snapshots(),
-      builder: (context, myDocSnap) {
+      stream: myDoc.snapshots(),
+      builder: (context, AsyncSnapshot<DocumentSnapshot> myDocSnap) {
         try {
           if (!isOffline) {
-            return myDocSnap.data['buildings'].length == 0
+            return myDocSnap.data.data()['buildings'].length == 0
                 ? BotToast.showSimpleNotification(
                 title: 'You will be notified when tenant adds you')
                 : ListView.builder(
-              itemCount: myDocSnap.data['buildings'].length,
+              itemCount: myDocSnap.data.data()['buildings'].length,
               itemBuilder: (context, index) {
                 return BuildingsCard(
-                  buildingName: myDocSnap.data['buildings'][index],
+                  buildingName: myDocSnap.data.data()['buildings'][index],
                   myDocSnap: myDocSnap,
                   isOffline: isOffline,
                 );
               },
             );
           } else {
-            return myDocSnap.data['offlineBuildings'].length == 0
+            return myDocSnap.data.data()['offlineBuildings'].length == 0
                 ? BotToast.showSimpleNotification(
                 title: 'No offline tenants, Add one...')
                 : ListView.builder(
-              itemCount: myDocSnap.data['offlineBuildings'].length,
+              itemCount: myDocSnap.data.data()['offlineBuildings'].length,
               itemBuilder: (context, index) {
-                print(myDocSnap.data['offlineBuildings'][index]);
+                print(myDocSnap.data.data()['offlineBuildings'][index]);
                 return BuildingsCard(
-                  buildingName: myDocSnap.data['offlineBuildings'][index],
+                  buildingName: myDocSnap.data.data()['offlineBuildings']
+                  [index],
                   myDocSnap: myDocSnap,
                   isOffline: isOffline,
                 );

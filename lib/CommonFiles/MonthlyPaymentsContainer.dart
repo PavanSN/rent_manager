@@ -9,7 +9,7 @@ import 'CommonWidgetsAndData.dart';
 import 'PaymentMethodsBtmSheet.dart';
 
 class MonthlyPayments extends StatelessWidget {
-  final AsyncSnapshot tenantSnap;
+  final AsyncSnapshot<DocumentSnapshot> tenantSnap;
   final bool isTenant;
   final int rentAmnt;
   final bool isOffline;
@@ -39,8 +39,8 @@ class MonthlyPayments extends StatelessWidget {
         centerTitle: true,
         title: Text(
           !isOffline
-              ? '${tenantSnap.data['name']}   ₹${tenantSnap.data['rent']}/month'
-              : '${tenantSnap.data['name']}',
+              ? '${tenantSnap.data.data()['name']}   ₹${tenantSnap.data.data()['rent']}/month'
+              : '${tenantSnap.data.data()['name']}',
           style: TextStyle(color: Colors.black),
           overflow: TextOverflow.ellipsis,
         ),
@@ -48,7 +48,7 @@ class MonthlyPayments extends StatelessWidget {
       body: Column(
         children: <Widget>[
           Tabs(
-            accCreated: tenantSnap.data['accCreated'],
+            accCreated: tenantSnap.data.data()['accCreated'],
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.01),
           PayTile(
@@ -139,7 +139,7 @@ List<Tab> getTabs(int accCreated) {
 class MonthsWithPaymentTile extends StatelessWidget {
   final int year;
   final bool isTenant;
-  final AsyncSnapshot tenantSnap;
+  final AsyncSnapshot<DocumentSnapshot> tenantSnap;
   final int rentAmnt;
   final bool isOffline;
   final String offlineTenantUid;
@@ -176,7 +176,7 @@ class PayTile extends StatelessWidget {
   final int month;
   final int year;
   final bool isTenant;
-  final AsyncSnapshot tenantSnap;
+  final AsyncSnapshot<DocumentSnapshot> tenantSnap;
   final int rentAmnt;
   final bool isOffline;
   final String offlineTenantUid;
@@ -211,13 +211,14 @@ class PayTile extends StatelessWidget {
                     onPressed: () {
                       !isOffline
                           ? FirebaseFirestore.instance
-                              .doc(
-                                  'users/${tenantSnap.data['uid']}/payments/payments')
-                              .update({monthYear: 'paid'})
-                          : myDoc()
-                              .collection('offline')
-                              .doc('$offlineTenantUid/payments/payments')
-                              .update({monthYear: 'paid'});
+                          .doc(
+                          'users/${tenantSnap.data
+                              .data()['uid']}/payments/payments')
+                          .update({monthYear: 'paid'})
+                          : myDoc
+                          .collection('offline')
+                          .doc('$offlineTenantUid/payments/payments')
+                          .update({monthYear: 'paid'});
                       Navigator.pop(context);
                     },
                   ),
@@ -228,9 +229,10 @@ class PayTile extends StatelessWidget {
                       !isOffline
                           ? FirebaseFirestore.instance
                           .doc(
-                          'users/${tenantSnap.data['uid']}/payments/payments')
+                          'users/${tenantSnap.data
+                              .data()['uid']}/payments/payments')
                           .update({monthYear: FieldValue.delete()})
-                          : myDoc()
+                          : myDoc
                           .collection('offline')
                           .doc('$offlineTenantUid/payments/payments')
                           .update({monthYear: FieldValue.delete()});
@@ -249,17 +251,17 @@ class PayTile extends StatelessWidget {
         ),
         trailing: StreamBuilder(
           stream: isTenant
-              ? streamDoc('users/${myDoc().id}/payments/payments')
+              ? streamDoc('users/${myDoc.id}/payments/payments')
               : !isOffline
               ? FirebaseFirestore.instance
               .doc(
-              'users/${tenantSnap.data['uid']}/payments/payments')
+              'users/${tenantSnap.data.data()['uid']}/payments/payments')
               .snapshots()
-              : myDoc()
+              : myDoc
               .collection('offline')
               .doc('$offlineTenantUid/payments/payments')
               .snapshots(),
-          builder: (context, paymentDoc) {
+          builder: (context, AsyncSnapshot<DocumentSnapshot> paymentDoc) {
             try {
               return PayStatus(
                 status: getStatus(month, year, paymentDoc),
@@ -286,11 +288,11 @@ class PayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: myDoc().snapshots(),
-      builder: (context, doc) {
+      stream: myDoc.snapshots(),
+      builder: (context, AsyncSnapshot<DocumentSnapshot> doc) {
         try {
-          var rent = doc.data['rent'];
-          var homeId = doc.data['homeId'];
+          var rent = doc.data.data()['rent'];
+          var homeId = doc.data.data()['homeId'];
           var upiId;
           FirebaseFirestore.instance
               .doc('users/$homeId')
@@ -336,7 +338,7 @@ class UpdatePayment extends StatelessWidget {
             child: Text('Paid'),
             color: Colors.green,
             onPressed: () {
-              myDoc().collection('payments').doc('payments').update({
+              myDoc.collection('payments').doc('payments').update({
                 monthYear: 'paid',
               }).then((_) {
                 Navigator.pop(context);
@@ -346,7 +348,7 @@ class UpdatePayment extends StatelessWidget {
             child: Text('Not Paid'),
             color: Colors.red,
             onPressed: () {
-              myDoc().collection('payments').doc('payments').update({
+              myDoc.collection('payments').doc('payments').update({
                 monthYear: null,
               }).then((_) {
                 Navigator.pop(context);
@@ -359,10 +361,10 @@ class UpdatePayment extends StatelessWidget {
 
 // ============================= Pay Tile ==================================//
 
-getStatus(month, year, AsyncSnapshot paymentDoc) {
+getStatus(month, year, AsyncSnapshot<DocumentSnapshot> paymentDoc) {
   String monthYear = month.toString() + year.toString();
 
-  if (paymentDoc.data[monthYear] != null) {
+  if (paymentDoc.data.data()[monthYear] != null) {
     return 'paid';
   } else {
     return 'unpaid';

@@ -1,8 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/Models/UserDetails.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:upi_india/upi_india.dart';
 
 class PayUsingUpi {
@@ -48,10 +47,11 @@ class PayUsingUpi {
   handleSuccess(String txnId, String monthYear, bool isTenant, int expDate) {
     if (isTenant) {
       FirebaseFirestore.instance
-          .doc('users/${Injector.get<UserDetails>().uid}/payments/payments')
+          .doc(
+              'users/${FirebaseAuth.instance.currentUser.uid}/payments/payments')
           .update({monthYear: txnId});
     } else {
-      myDoc().update({
+      myDoc.update({
         'expDate': expDate,
       });
     }

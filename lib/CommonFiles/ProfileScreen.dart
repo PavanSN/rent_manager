@@ -1,7 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:home_manager/Models/UserDetails.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonWidgetsAndData.dart';
 
@@ -48,11 +48,13 @@ class TenantCountUi extends StatelessWidget {
               color: Colors.black,
             ),
             FutureBuilder(
-              future: myDoc().get(),
-              builder: (context, snap) {
+              future: myDoc.get(),
+              builder: (context, AsyncSnapshot<DocumentSnapshot> snap) {
                 try {
                   return Text(
-                    snap.data['userCount'].length.toString(),
+                    (snap.data.data()['userCount'].length +
+                            snap.data.data()['offlineTenants'].length)
+                        .toString(),
                     style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),
                   );
                 } catch (e) {
@@ -95,26 +97,20 @@ class ProfileUi extends StatelessWidget {
 class PhoneNum extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Injector.get<UserDetails>().getDetails();
-    return Text('Phone No : ${Injector.get<UserDetails>().phoneNum}');
+    return Text('Phone No : ${FirebaseAuth.instance.currentUser.phoneNumber}');
   }
 }
 
 class ProfilePhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StateBuilder(
-      observe: () => Injector.get<UserDetails>(),
-      builder: (context, _) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: Image.network(
-            Injector.get<UserDetails>().photoUrl,
-            height: 60,
-            width: 60,
-          ),
-        );
-      },
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(100),
+      child: Image.network(
+        FirebaseAuth.instance.currentUser.photoURL,
+        height: 60,
+        width: 60,
+      ),
     );
   }
 }
@@ -132,7 +128,7 @@ class UpiID extends StatelessWidget {
               onSubmitted: (upiId) {
                 if (upiId.toString().contains('@')) {
                   updateDoc({'upiId': upiId},
-                      'users/${Injector.get<UserDetails>().uid}');
+                      'users/${FirebaseAuth.instance.currentUser.uid}');
                   BotToast.showSimpleNotification(
                       title: 'UPI Updated successfully');
                   Navigator.pop(context);
@@ -143,14 +139,14 @@ class UpiID extends StatelessWidget {
             'Update UPI');
       },
       child: StreamBuilder(
-        stream: streamDoc('users/${Injector.get<UserDetails>().uid}'),
-        builder: (context, userDoc) {
+        stream: streamDoc('users/${FirebaseAuth.instance.currentUser.uid}'),
+        builder: (context, AsyncSnapshot<DocumentSnapshot> userDoc) {
           try {
             return Text(
-              'UPI ID : ${userDoc.data['upiId']}',
+              'UPI ID : ${userDoc.data.data()['upiId']}',
             );
           } catch (e) {
-            return Text('Loading');
+            return Text('UPI ID :');
           }
         },
       ),
@@ -161,17 +157,13 @@ class UpiID extends StatelessWidget {
 class UserName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StateBuilder(
-      observe: () => Injector.get<UserDetails>(),
-      builder: (context, _) {
-        return Text(
-          'Hello, ${Injector.get<UserDetails>().name}',
-          style: Theme.of(context)
-              .textTheme
-              .headline6
-              .copyWith(fontWeight: FontWeight.w300),
-        );
-      },
+    return Text(
+      'Hello, ${FirebaseAuth.instance.currentUser.displayName}',
+      style: Theme
+          .of(context)
+          .textTheme
+          .headline6
+          .copyWith(fontWeight: FontWeight.w300),
     );
   }
 }

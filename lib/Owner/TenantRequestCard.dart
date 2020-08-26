@@ -1,50 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/Models/UserDetails.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Requests extends StatelessWidget {
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
+
+  Requests({this.myDocSnap});
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: myDoc().snapshots(),
-      builder: (context, snap) {
-        try {
-          if (snap.hasData || !snap.hasError || snap.data['upiId'] == null) {
-            return ListView.builder(
-              itemCount: snap.data['requests'].length,
-              itemBuilder: (context, index) {
-                return NewTenantRequestCard(
-                  requesterUid: snap.data['requests'][index],
-                );
-              },
-            );
-          } else
-            return Container();
-        } catch (e) {
-          return Container();
-        }
-      },
-    );
+    if (myDocSnap.hasData ||
+        !myDocSnap.hasError ||
+        myDocSnap.data.data()['upiId'] == null) {
+      return ListView.builder(
+        itemCount: myDocSnap.data.data()['requests'].length,
+        itemBuilder: (context, index) {
+          return NewTenantRequestCard(
+            requesterUid: myDocSnap.data.data()['requests'][index],
+          );
+        },
+      );
+    } else
+      return Container();
   }
 }
 
 class NewTenantRequestCard extends StatelessWidget {
   final String requesterUid;
 
-  const NewTenantRequestCard({this.requesterUid});
+  NewTenantRequestCard({this.requesterUid});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: futureDoc('users/$requesterUid'),
-      builder: (context, snap) {
+    return StreamBuilder(
+      stream: streamDoc('users/$requesterUid'),
+      builder: (context, AsyncSnapshot<DocumentSnapshot> snap) {
         try {
-          var requesterName = snap.data['name'];
-          var requesterPhoto = snap.data['photoUrl'];
-          var requesterPhoneNo = snap.data['phoneNum'];
+          var requesterName = snap.data.data()['name'];
+          var requesterPhoto = snap.data.data()['photoUrl'];
+          var requesterPhoneNo = snap.data.data()['phoneNum'];
           return Card(
             elevation: 10,
             margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -87,7 +83,7 @@ class NewTenantRequestCard extends StatelessWidget {
                           child: Text('Reject'),
                           color: Colors.red,
                           onPressed: () {
-                            myDoc().update({
+                            myDoc.update({
                               'requests': FieldValue.arrayRemove([requesterUid])
                             });
                           },
@@ -108,7 +104,7 @@ class NewTenantRequestCard extends StatelessWidget {
 }
 
 onAccept(context, requesterUid) {
-  myDoc().get().then((value) {
+  myDoc.get().then((value) {
     List buildings = value.data()['buildings'];
     bottomSheet(
         context,
@@ -118,7 +114,7 @@ onAccept(context, requesterUid) {
               enabled: true,
               hintText: 'ex: Building-1',
               onSubmitted: (buildingName) {
-                myDoc().update({
+                myDoc.update({
                   'buildings': FieldValue.arrayUnion([buildingName]),
                   buildingName: FieldValue.arrayUnion([requesterUid]),
                   'requests': FieldValue.arrayRemove([requesterUid]),
@@ -126,7 +122,7 @@ onAccept(context, requesterUid) {
                   'buildingsPhoto': {buildingName: null}
                 }).then((_) {
                   updateDoc(
-                    {'homeId': Injector.get<UserDetails>().uid},
+                    {'homeId': FirebaseAuth.instance.currentUser.uid},
                     'users/$requesterUid',
                   );
                   Navigator.pop(context);
@@ -145,13 +141,14 @@ onAccept(context, requesterUid) {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      myDoc().update({
+                      myDoc.update({
                         buildings[index]: FieldValue.arrayUnion([requesterUid]),
                         'requests': FieldValue.arrayRemove([requesterUid]),
                         'userCount': FieldValue.arrayUnion([requesterUid]),
                       });
                       updateDoc(
-                          {'homeId': requesterUid}, 'users/$requesterUid');
+                          {'homeId': FirebaseAuth.instance.currentUser.uid},
+                          'users/$requesterUid');
                       Navigator.pop(context);
                     },
                     child: Chip(

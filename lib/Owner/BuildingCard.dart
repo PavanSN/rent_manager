@@ -1,25 +1,25 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/Models/UserDetails.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'BuildingImageUpdater.dart';
 import 'TenantList.dart';
 
 class BuildingsCard extends StatelessWidget {
   final String buildingName;
-  final AsyncSnapshot myDocSnap;
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
   final bool isOffline;
 
   BuildingsCard({this.buildingName, this.myDocSnap, this.isOffline});
 
   @override
   Widget build(BuildContext context) {
-    var buildingPhoto = myDocSnap.data['buildingsPhoto'][buildingName] ?? null;
+    var buildingPhoto =
+        myDocSnap.data.data()['buildingsPhoto'][buildingName] ?? null;
     return Card(
       elevation: 10,
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -32,18 +32,19 @@ class BuildingsCard extends StatelessWidget {
             ListTile(
               onTap: () => null,
               title: Text(buildingName),
-              subtitle:
-                  Text('Tenants : ${myDocSnap.data[buildingName].length}'),
+              subtitle: Text(
+                  'Tenants : ${myDocSnap.data.data()[buildingName].length}'),
               trailing: IconButton(
                 icon: Icon(
                   Icons.add,
                   color: Colors.grey,
                 ),
-                onPressed: () => bottomSheet(
-                  context,
-                  AddTenant(
-                    buildingName: buildingName,
-                    isOffline: isOffline,
+                onPressed: () =>
+                    bottomSheet(
+                      context,
+                      AddTenant(
+                        buildingName: buildingName,
+                        isOffline: isOffline,
                   ),
                   'Add Tenant',
                 ),
@@ -89,38 +90,37 @@ class BuildingsCard extends StatelessWidget {
                               onPressed: () async {
                                 if (!isOffline) {
                                   List buildings;
-                                  await myDoc().get().then((value) =>
-                                      buildings = value.data()[buildingName]);
+                                  await myDoc.get().then((value) =>
+                                  buildings = value.data()[buildingName]);
                                   buildings.forEach((tenantUid) {
                                     updateDoc({'homeId': null, 'rent': null},
                                         'users/$tenantUid');
                                   });
-                                  myDoc().update({
+                                  myDoc.update({
                                     'buildings':
-                                        FieldValue.arrayRemove([buildingName]),
+                                    FieldValue.arrayRemove([buildingName]),
                                     'userCount':
-                                        FieldValue.arrayRemove(buildings),
+                                    FieldValue.arrayRemove(buildings),
                                     buildingName: FieldValue.delete(),
                                   }).then((value) {
                                     FirebaseStorage.instance
                                         .ref()
                                         .child(
-                                        'profiles/${Injector
-                                            .get<UserDetails>()
-                                            .uid}$buildingName.png')
+                                        'profiles/${FirebaseAuth.instance
+                                            .currentUser.uid}$buildingName.png')
                                         .delete();
                                   });
                                 } else {
                                   List buildings;
-                                  await myDoc().get().then((value) =>
+                                  await myDoc.get().then((value) =>
                                   buildings = value.data()[buildingName]);
                                   buildings.forEach((tenantUid) {
-                                    myDoc()
+                                    myDoc
                                         .collection('offline')
                                         .doc(tenantUid)
                                         .delete();
                                   });
-                                  myDoc().update({
+                                  myDoc.update({
                                     'offlineBuildings':
                                     FieldValue.arrayRemove([buildingName]),
                                     'offlineTenants':
@@ -130,9 +130,8 @@ class BuildingsCard extends StatelessWidget {
                                   FirebaseStorage.instance
                                       .ref()
                                       .child(
-                                      'profiles/${Injector
-                                          .get<UserDetails>()
-                                          .uid}$buildingName.png')
+                                      'profiles/${FirebaseAuth.instance
+                                          .currentUser.uid}$buildingName.png')
                                       .delete();
                                   Navigator.pop(context);
                                 }
@@ -254,7 +253,7 @@ class AddTenant extends StatelessWidget {
               BotToast.showSimpleNotification(
                   title: 'Please fill up the empty fields');
             } else {
-              myDoc().collection('offline').add({
+              myDoc.collection('offline').add({
                 'name': nameController.text,
                 'phoneNum': phoneNo.phoneNumber,
                 'rent': rentController.text,
@@ -262,9 +261,8 @@ class AddTenant extends StatelessWidget {
                     .now()
                     .year
               }).then((value) {
-                myDoc().update({
-                  'offlineTenants':
-                  FieldValue.arrayUnion([value.id]),
+                myDoc.update({
+                  'offlineTenants': FieldValue.arrayUnion([value.id]),
                   buildingName: FieldValue.arrayUnion([value.id])
                 });
                 value
@@ -293,9 +291,7 @@ addTenantOnline(context, buildingName) {
     } else if (docs.docs.elementAt(0).data()['homeId'] != null) {
       BotToast.showSimpleNotification(title: 'Tenant is already under a owner');
     } else if (docs.docs.first.data()['uid'] ==
-        Injector
-            .get<UserDetails>()
-            .uid) {
+        FirebaseAuth.instance.currentUser.uid) {
       BotToast.showSimpleNotification(
           title: 'You cannot enter your phone number');
     } else if (docs.docs.length != 0) {
@@ -303,11 +299,9 @@ addTenantOnline(context, buildingName) {
           .elementAt(0)
           .reference;
       tenantDoc.update({
-        'homeId': Injector
-            .get<UserDetails>()
-            .uid,
+        'homeId': FirebaseAuth.instance.currentUser.uid,
       });
-      myDoc().update({
+      myDoc.update({
         buildingName: FieldValue.arrayUnion([tenantDoc.id]),
         'userCount': FieldValue.arrayUnion([tenantDoc.id]),
         'buildingsPhoto': {buildingName: null}

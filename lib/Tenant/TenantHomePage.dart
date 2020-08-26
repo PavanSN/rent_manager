@@ -1,13 +1,12 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
-import 'package:home_manager/Models/UserDetails.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:share/share.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../CommonFiles/CommonWidgetsAndData.dart';
@@ -17,21 +16,21 @@ class Tenant extends StatelessWidget {
   Widget build(BuildContext context) {
     return StatefulBuilder(
       builder: (context, setState) {
-        myDoc().get().catchError((e) {
+        myDoc.get().catchError((e) {
           setState(() {});
         });
         return Scaffold(
           body: StreamBuilder(
-            stream: myDoc().snapshots(),
-            builder: (context, myDocSnap) {
+            stream: myDoc.snapshots(),
+            builder: (context, AsyncSnapshot<DocumentSnapshot> myDocSnap) {
               return Body(myDocSnap: myDocSnap);
             },
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           floatingActionButton: StreamBuilder(
-            stream: myDoc().snapshots(),
-            builder: (context, myDocSnap) {
+            stream: myDoc.snapshots(),
+            builder: (context, AsyncSnapshot<DocumentSnapshot> myDocSnap) {
               return FloatingBtnFcn(
                 myDocSnap: myDocSnap,
               );
@@ -44,7 +43,7 @@ class Tenant extends StatelessWidget {
 }
 
 class FloatingBtnFcn extends StatelessWidget {
-  final myDocSnap;
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
   const FloatingBtnFcn({this.myDocSnap});
 
@@ -53,12 +52,12 @@ class FloatingBtnFcn extends StatelessWidget {
     try {
       return FloatingActionButton(
         backgroundColor: Colors.deepPurpleAccent,
-        child: myDocSnap.data['homeId'] != null
+        child: myDocSnap.data.data()['homeId'] != null
             ? Icon(Icons.call)
             : Icon(Icons.add),
         onPressed: () {
-          if (myDocSnap.data['homeId'] == null) {
-            String tenantPhone = myDocSnap.data['phoneNum'];
+          if (myDocSnap.data.data()['homeId'] == null) {
+            String tenantPhone = myDocSnap.data.data()['phoneNum'];
             tenantPhone == null
                 ? bottomSheet(
                     context, PhoneNumVerificationUI(), 'Verify Your Mobile')
@@ -69,7 +68,7 @@ class FloatingBtnFcn extends StatelessWidget {
                     ),
                     'Enter Owner Phone Number');
           } else {
-            futureDoc('users/${myDocSnap.data['homeId']}')
+            futureDoc('users/${myDocSnap.data.data()['homeId']}')
                 .then((value) => launch('tel:${value.data()['phoneNum']}'));
           }
         },
@@ -93,7 +92,7 @@ share() {
 }
 
 class Body extends StatelessWidget {
-  final myDocSnap;
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
   const Body({this.myDocSnap});
 
@@ -103,12 +102,15 @@ class Body extends StatelessWidget {
       return MonthlyPayments(
         tenantSnap: myDocSnap,
         isTenant: true,
-        rentAmnt: int.parse(myDocSnap.data['rent']),
+        rentAmnt: int.parse(myDocSnap.data.data()['rent']),
         isOffline: false,
       );
     } catch (e) {
-      print(e);
-      return Container();
+      return Center(
+        child: Text(
+          'Ask your owner to add your phone number (OR) to edit your rent amount',
+        ),
+      );
     }
   }
 }
@@ -116,7 +118,7 @@ class Body extends StatelessWidget {
 PhoneNumber phoneNo;
 
 class AddOwner extends StatelessWidget {
-  final myDocSnap;
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
   AddOwner({this.myDocSnap});
 
@@ -138,8 +140,8 @@ class AddOwner extends StatelessWidget {
               .where('phoneNum', isEqualTo: phoneNo.phoneNumber)
               .get()
               .then((docs) {
-            if (docs.docs.first.data()['uid'] ==
-                Injector.get<UserDetails>().uid) {
+            if (FirebaseAuth.instance.currentUser.phoneNumber ==
+                phoneNo.phoneNumber) {
               BotToast.showSimpleNotification(
                   title: 'You cannot enter your phone number');
               Navigator.of(context).pop();
@@ -149,8 +151,8 @@ class AddOwner extends StatelessWidget {
             } else {
               var doc = docs.docs.first.reference;
               doc.update({
-                'requests':
-                    FieldValue.arrayUnion([Injector.get<UserDetails>().uid])
+                'requests': FieldValue.arrayUnion(
+                    [FirebaseAuth.instance.currentUser.uid])
               });
               BotToast.showSimpleNotification(
                   title: 'Waiting for owner to accept your request');

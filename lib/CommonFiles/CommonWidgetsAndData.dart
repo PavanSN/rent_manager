@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:home_manager/Models/UserDetails.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 createDoc(data, path) => FirebaseFirestore.instance.doc(path).set(data);
 
@@ -16,8 +15,8 @@ Stream<DocumentSnapshot> streamDoc(path) =>
 Future<DocumentSnapshot> futureDoc(path) =>
     FirebaseFirestore.instance.doc(path).get();
 
-DocumentReference myDoc() =>
-    FirebaseFirestore.instance.doc('users/${Injector.get<UserDetails>().uid}');
+DocumentReference myDoc = FirebaseFirestore.instance
+    .doc('users/${FirebaseAuth.instance.currentUser.uid}');
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -118,9 +117,7 @@ bottomSheet(context, body, headingText) => showModalBottomSheet(
       context: context,
       builder: (context) {
         return Padding(
-          padding: MediaQuery
-              .of(context)
-              .viewInsets,
+          padding: MediaQuery.of(context).viewInsets,
           child: ListView(
             shrinkWrap: true,
             scrollDirection: Axis.vertical,

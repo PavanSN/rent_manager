@@ -1,12 +1,11 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:home_manager/Models/UserDetails.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 import '../CommonFiles/CommonWidgetsAndData.dart';
 
@@ -126,7 +125,7 @@ class _UploaderState extends State<Uploader> {
   void startUpload() {
     Navigator.of(context).pop();
     String filePath =
-        'profiles/${Injector.get<UserDetails>().uid}${widget.buildingName}.png';
+        'profiles/${FirebaseAuth.instance.currentUser.uid}${widget.buildingName}.png';
     Scaffold.of(context).showSnackBar(SnackBar(
       content: Text(
           'You will be returned to the previous screen after upload completes, Please wait...'),
@@ -139,7 +138,7 @@ class _UploaderState extends State<Uploader> {
         .onComplete
         .then((value) async {
       String photoUrl = await value.ref.getDownloadURL();
-      myDoc().update({
+      myDoc.update({
         'buildingsPhoto': {widget.buildingName: photoUrl},
       }).then((value) => Navigator.of(context).pop());
     });

@@ -1,10 +1,11 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PaymentMethodsBtmSheet.dart';
 
 class Subscription extends StatelessWidget {
-  final AsyncSnapshot myDocSnap;
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
   const Subscription({this.myDocSnap});
 
@@ -27,14 +28,14 @@ class Subscription extends StatelessWidget {
 }
 
 class SubscriptionOffers extends StatelessWidget {
-  final AsyncSnapshot myDocSnap;
+  final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
   const SubscriptionOffers({Key key, this.myDocSnap});
 
   @override
   Widget build(BuildContext context) {
-    int amount = (myDocSnap.data['userCount'].length +
-            myDocSnap.data['offlineTenants'].length) *
+    int amount = (myDocSnap.data.data()['userCount'].length +
+            myDocSnap.data.data()['offlineTenants'].length) *
         10;
     return ListView(
       children: <Widget>[
@@ -51,8 +52,8 @@ class SubscriptionOffers extends StatelessWidget {
                 height: 15,
               ),
               Text(
-                'No of tenants = ${myDocSnap.data['userCount'].length +
-                    myDocSnap.data['offlineTenants'].length}',
+                'No of tenants = ${myDocSnap.data.data()['userCount'].length +
+                    myDocSnap.data.data()['offlineTenants'].length}',
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
             ],

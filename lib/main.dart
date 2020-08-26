@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:home_manager/CommonFiles/Settings.dart';
@@ -31,23 +32,32 @@ void main() {
 class RentManager extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Injector(
-      inject: [
-        Inject(() => UserDetails()),
-        Inject(() => TabPressed()),
-      ],
-      builder: (context) {
-        return MaterialApp(
-          theme: theme,
-          builder: BotToastInit(),
-          navigatorObservers: [BotToastNavigatorObserver()],
-          home: StreamBuilder(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, user) {
-              return user.hasData ? MainPage() : GoogleSignInPage();
+    return FutureBuilder(
+      future: Firebase.initializeApp(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Injector(
+            inject: [
+              Inject(() => UserDetails()),
+              Inject(() => TabPressed()),
+            ],
+            builder: (context) {
+              return MaterialApp(
+                theme: theme,
+                builder: BotToastInit(),
+                navigatorObservers: [BotToastNavigatorObserver()],
+                home: StreamBuilder(
+                  stream: FirebaseAuth.instance.authStateChanges(),
+                  builder: (context, user) {
+                    return user.hasData ? MainPage() : GoogleSignInPage();
+                  },
+                ),
+              );
             },
-          ),
-        );
+          );
+        } else {
+          return Container();
+        }
       },
     );
   }
@@ -84,6 +94,7 @@ final List body = [Tenant(), CheckSubscription(), ProfileScreen(), Settings()];
 class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Injector.get<UserDetails>().getDetails();
     return StatefulBuilder(
       builder: (context, setState) {
         return Scaffold(
@@ -95,7 +106,7 @@ class MainPage extends StatelessWidget {
             currentIndex: currIndex,
             onTap: (index) => setState(() {
               currIndex = index;
-            }),
+                }),
           ),
           body: body[currIndex],
         );

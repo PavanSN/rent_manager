@@ -27,6 +27,7 @@ dependencies:
   intl_phone_number_input:
   sms_autofill:
   toggle_switch:
+  firebase_core:
 
 dev_dependencies:
   flutter_test:
