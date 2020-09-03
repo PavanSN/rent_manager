@@ -1,5 +1,5 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../Models/SignIn.dart';
 
@@ -62,7 +62,7 @@ class SignInBtn extends StatelessWidget {
       elevation: 10,
       onPressed: () {
         SignIn().signIn();
-        BotToast.showSimpleNotification(title: 'Welcome to Rent Manager');
+        Fluttertoast.showToast(msg: 'Welcome to Rent Manager');
       },
       color: Colors.white,
       child: Padding(

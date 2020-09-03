@@ -1,6 +1,6 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/Models/TabPressed.dart';
 import 'package:share/share.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -144,12 +144,13 @@ class MonthsWithPaymentTile extends StatelessWidget {
   final bool isOffline;
   final String offlineTenantUid;
 
-  MonthsWithPaymentTile({this.year,
-    this.isTenant,
-    this.tenantSnap,
-    this.rentAmnt,
-    this.isOffline,
-    this.offlineTenantUid});
+  MonthsWithPaymentTile(
+      {this.year,
+      this.isTenant,
+      this.tenantSnap,
+      this.rentAmnt,
+      this.isOffline,
+      this.offlineTenantUid});
 
   @override
   Widget build(BuildContext context) {
@@ -197,8 +198,7 @@ class PayTile extends StatelessWidget {
       child: ListTile(
         onTap: () {
           if (isTenant) {
-            BotToast.showSimpleNotification(
-                title: 'Tenant Cannot edit payments');
+            Fluttertoast.showToast(msg: 'Tenant Cannot edit payments');
           } else {
             bottomSheet(
               context,

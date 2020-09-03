@@ -1,4 +1,3 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -44,8 +43,6 @@ class RentManager extends StatelessWidget {
             builder: (context) {
               return MaterialApp(
                 theme: theme,
-                builder: BotToastInit(),
-                navigatorObservers: [BotToastNavigatorObserver()],
                 home: StreamBuilder(
                   stream: FirebaseAuth.instance.authStateChanges(),
                   builder: (context, user) {

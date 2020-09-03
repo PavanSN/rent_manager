@@ -1,8 +1,8 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
@@ -39,12 +39,11 @@ class BuildingsCard extends StatelessWidget {
                   Icons.add,
                   color: Colors.grey,
                 ),
-                onPressed: () =>
-                    bottomSheet(
-                      context,
-                      AddTenant(
-                        buildingName: buildingName,
-                        isOffline: isOffline,
+                onPressed: () => bottomSheet(
+                  context,
+                  AddTenant(
+                    buildingName: buildingName,
+                    isOffline: isOffline,
                   ),
                   'Add Tenant',
                 ),
@@ -250,8 +249,7 @@ class AddTenant extends StatelessWidget {
           onPressed: () {
             if (nameController.text.isEmpty ||
                 rentController.text.isEmpty) {
-              BotToast.showSimpleNotification(
-                  title: 'Please fill up the empty fields');
+              Fluttertoast.showToast(msg: 'Please fill up the empty fields');
             } else {
               myDoc.collection('offline').add({
                 'name': nameController.text,
@@ -286,14 +284,12 @@ addTenantOnline(context, buildingName) {
       .get()
       .then((docs) {
     if (docs.docs.length == 0) {
-      BotToast.showSimpleNotification(
-          title: 'Tenant\'s phone isn\'t registered');
+      Fluttertoast.showToast(msg: 'Tenant\'s phone isn\'t registered');
     } else if (docs.docs.elementAt(0).data()['homeId'] != null) {
-      BotToast.showSimpleNotification(title: 'Tenant is already under a owner');
+      Fluttertoast.showToast(msg: 'Tenant is already under a owner');
     } else if (docs.docs.first.data()['uid'] ==
         FirebaseAuth.instance.currentUser.uid) {
-      BotToast.showSimpleNotification(
-          title: 'You cannot enter your phone number');
+      Fluttertoast.showToast(msg: 'You cannot enter your phone number');
     } else if (docs.docs.length != 0) {
       var tenantDoc = docs.docs
           .elementAt(0)
@@ -306,8 +302,7 @@ addTenantOnline(context, buildingName) {
         'userCount': FieldValue.arrayUnion([tenantDoc.id]),
         'buildingsPhoto': {buildingName: null}
       });
-      BotToast.showSimpleNotification(
-          title: 'Waiting for owner to accept your request');
+      Fluttertoast.showToast(msg: 'Waiting for owner to accept your request');
       Navigator.pop(context);
     }
   });

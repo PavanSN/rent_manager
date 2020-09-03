@@ -1,7 +1,7 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
@@ -20,6 +20,14 @@ class Tenant extends StatelessWidget {
           setState(() {});
         });
         return Scaffold(
+          appBar: AppBar(
+            actions: share(),
+            title: Text(
+              'Tenant',
+              style: TextStyle(color: Colors.black),
+            ),
+            centerTitle: true,
+          ),
           body: StreamBuilder(
             stream: myDoc.snapshots(),
             builder: (context, AsyncSnapshot<DocumentSnapshot> myDocSnap) {
@@ -60,7 +68,7 @@ class FloatingBtnFcn extends StatelessWidget {
             String tenantPhone = myDocSnap.data.data()['phoneNum'];
             tenantPhone == null
                 ? bottomSheet(
-                    context, PhoneNumVerificationUI(), 'Verify Your Mobile')
+                context, PhoneNumVerificationUI(), 'Register your number')
                 : bottomSheet(
                     context,
                     AddOwner(
@@ -94,11 +102,12 @@ share() {
 class Body extends StatelessWidget {
   final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
-  const Body({this.myDocSnap});
+  Body({this.myDocSnap});
 
   @override
   Widget build(BuildContext context) {
     try {
+      Fluttertoast.showToast(msg: 'Welcome Tenant...');
       return MonthlyPayments(
         tenantSnap: myDocSnap,
         isTenant: true,
@@ -106,12 +115,58 @@ class Body extends StatelessWidget {
         isOffline: false,
       );
     } catch (e) {
-      return Center(
-        child: Text(
-          'Ask your owner to add your phone number (OR) to edit your rent amount',
-        ),
-      );
+      if (myDocSnap.connectionState == ConnectionState.active) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              CheckFor(
+                checkFor: myDocSnap.data.data()['phoneNum'] != null,
+                text: 'Your phone number registered : ',
+              ),
+              CheckFor(
+                checkFor: myDocSnap.data.data()['homeId'] != null,
+                text: 'Added owner / Owner accepted your request : ',
+              )
+            ],
+          ),
+        );
+      } else {
+        return Container();
+      }
     }
+  }
+}
+
+class CheckFor extends StatelessWidget {
+  final bool checkFor;
+  final String text;
+
+  CheckFor({this.checkFor, this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(
+          text,
+          style: Theme
+              .of(context)
+              .textTheme
+              .caption,
+        ),
+        checkFor
+            ? Icon(
+          Icons.done,
+          color: Colors.green,
+        )
+            : Icon(
+          Icons.close,
+          color: Colors.red,
+        ),
+      ],
+    );
   }
 }
 
@@ -142,20 +197,18 @@ class AddOwner extends StatelessWidget {
               .then((docs) {
             if (FirebaseAuth.instance.currentUser.phoneNumber ==
                 phoneNo.phoneNumber) {
-              BotToast.showSimpleNotification(
-                  title: 'You cannot enter your phone number');
+              Fluttertoast.showToast(msg: 'You cannot enter your phone number');
               Navigator.of(context).pop();
             } else if (docs.docs.length == 0) {
-              BotToast.showSimpleNotification(
-                  title: 'Owner\'s phone isn\'t registered');
+              Fluttertoast.showToast(msg: 'Owner\'s phone isn\'t registered');
             } else {
               var doc = docs.docs.first.reference;
               doc.update({
                 'requests': FieldValue.arrayUnion(
                     [FirebaseAuth.instance.currentUser.uid])
               });
-              BotToast.showSimpleNotification(
-                  title: 'Waiting for owner to accept your request');
+              Fluttertoast.showToast(
+                  msg: 'Waiting for owner to accept your request');
               Navigator.pop(context);
             }
           });

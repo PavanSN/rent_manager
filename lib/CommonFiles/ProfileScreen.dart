@@ -1,7 +1,7 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'CommonWidgetsAndData.dart';
 
@@ -58,7 +58,7 @@ class TenantCountUi extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w300, fontSize: 20),
                   );
                 } catch (e) {
-                  return Text('Loading');
+                  return Text('0');
                 }
               },
             )
@@ -129,11 +129,10 @@ class UpiID extends StatelessWidget {
                 if (upiId.toString().contains('@')) {
                   updateDoc({'upiId': upiId},
                       'users/${FirebaseAuth.instance.currentUser.uid}');
-                  BotToast.showSimpleNotification(
-                      title: 'UPI Updated successfully');
+                  Fluttertoast.showToast(msg: 'UPI Updated successfully');
                   Navigator.pop(context);
                 } else
-                  BotToast.showSimpleNotification(title: 'Invalid UPI ID');
+                  Fluttertoast.showToast(msg: 'Invalid UPI ID');
               },
             ),
             'Update UPI');

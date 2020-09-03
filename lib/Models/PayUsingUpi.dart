@@ -1,6 +1,6 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:upi_india/upi_india.dart';
 
@@ -36,11 +36,11 @@ class PayUsingUpi {
   }
 
   txnDetails(UpiResponse txn) {
-    BotToast.showSimpleNotification(title: txn.status);
+    Fluttertoast.showToast(msg: txn.status);
     if (txn.status == 'success' || txn.status == 'SUCCESS') {
       handleSuccess(txn.transactionId, monthYear, isTenant, expDate);
     } else {
-      BotToast.showSimpleNotification(title: txn.error);
+      Fluttertoast.showToast(msg: txn.error);
     }
   }
 

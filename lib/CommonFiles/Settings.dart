@@ -1,9 +1,11 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
 import 'package:home_manager/Models/SignIn.dart';
+import 'package:home_manager/Models/UserDetails.dart';
+import 'package:states_rebuilder/states_rebuilder.dart';
 
 class Settings extends StatelessWidget {
   @override
@@ -31,17 +33,24 @@ class SettingsBody extends StatelessWidget {
       children: <Widget>[
         UpdatePhoneNumTile(),
         UpdateUpiTile(),
-        ListTile(
-          onTap: () {
-            bottomSheet(context, LogoutConfirmation(), 'Are you sure..?');
-          },
-          leading: Icon(
-            Icons.exit_to_app,
-            color: Colors.red,
-          ),
-          title: Text('Logout'),
-        )
+        LogOut(),
       ],
+    );
+  }
+}
+
+class LogOut extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        bottomSheet(context, LogoutConfirmation(), 'Are you sure..?');
+      },
+      leading: Icon(
+        Icons.exit_to_app,
+        color: Colors.red,
+      ),
+      title: Text('Logout'),
     );
   }
 }
@@ -52,6 +61,7 @@ class UpdatePhoneNumTile extends StatelessWidget {
     return ListTile(
       onTap: () {
         bottomSheet(context, PhoneNumVerificationUI(), 'Update Phone Number');
+        Injector.get<UserDetails>().getDetails();
       },
       leading: Icon(
         Icons.call,
@@ -78,11 +88,10 @@ class UpdateUpiTile extends StatelessWidget {
                 if (upiId.toString().contains('@')) {
                   updateDoc({'upiId': upiId},
                       'users/${FirebaseAuth.instance.currentUser.uid}');
-                  BotToast.showSimpleNotification(
-                      title: 'UPI Updated successfully');
+                  Fluttertoast.showToast(msg: 'UPI Updated successfully');
                   Navigator.pop(context);
                 } else
-                  BotToast.showSimpleNotification(title: 'Invalid UPI ID');
+                  Fluttertoast.showToast(msg: 'Invalid UPI ID');
               },
             ),
             'Update UPI');

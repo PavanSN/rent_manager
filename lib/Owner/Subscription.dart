@@ -1,17 +1,17 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/PaymentMethodsBtmSheet.dart';
 
 class Subscription extends StatelessWidget {
   final AsyncSnapshot<DocumentSnapshot> myDocSnap;
 
-  const Subscription({this.myDocSnap});
+  Subscription({this.myDocSnap});
 
   @override
   Widget build(BuildContext context) {
-    BotToast.showSimpleNotification(title: 'Your subscription was ended');
+    Fluttertoast.showToast(msg: 'Your subscription was ended');
     return Scaffold(
       appBar: AppBar(
         title: Text(

@@ -1,9 +1,9 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
-import 'package:home_manager/CommonFiles/Settings.dart';
+import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:share/share.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -62,18 +62,30 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
                     DateTime.now().millisecondsSinceEpoch &&
                 (doc.data.data()['userCount'].length != 0 ||
                     doc.data.data()['offlineTenants'].length != 0)) {
-              BotToast.showSimpleNotification(
-                  title: 'You subscription has ended...');
+              Fluttertoast.showToast(msg: 'You subscription has ended...');
               return Subscription(myDocSnap: doc);
             } else if (doc.data.data()['requests'].length != 0) {
-              BotToast.showSimpleNotification(title: 'New Request');
+              Fluttertoast.showToast(msg: 'New Request');
               return Requests(myDocSnap: doc);
-            } else if (doc.data.data()['upiId'] == null) {
-              return Center(child: UpdateUpiTile());
-            } else if (doc.data.data()['phoneNum'] != null) {
-              return Owner(isOffline: isOffline);
+            } else if (doc.data.data()['upiId'] == null ||
+                doc.data.data()['phoneNum'] == null) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    CheckFor(
+                      checkFor: doc.data.data()['phoneNum'] != null,
+                      text: 'Your phone number registered',
+                    ),
+                    CheckFor(
+                      checkFor: doc.data.data()['upiId'] != null,
+                      text: 'Your UPI ID registered',
+                    ),
+                  ],
+                ),
+              );
             } else {
-              return Center(child: UpdatePhoneNumTile());
+              return Owner(isOffline: isOffline);
             }
           } catch (e) {
             return Container();
@@ -99,8 +111,7 @@ addBuilding(context, isOffline) {
             List offlineBuildings = doc.data()['offlineBuildings'];
             onlineBuildings.forEach((name) {
               if (buildingName == name) {
-                BotToast.showSimpleNotification(
-                    title: 'Building already exists');
+                Fluttertoast.showToast(msg: 'Building already exists');
                 isDuplicateBuilding = true;
               }
             });
@@ -111,8 +122,7 @@ addBuilding(context, isOffline) {
             } else {
               offlineBuildings.forEach((name) {
                 if (buildingName == name) {
-                  BotToast.showSimpleNotification(
-                      title: 'Building already exists');
+                  Fluttertoast.showToast(msg: 'Building already exists');
                   isDuplicateBuilding = true;
                 }
               });
@@ -143,28 +153,43 @@ class Owner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Fluttertoast.showToast(
+        msg: "Welcome Owner (${isOffline ? 'Offline' : 'Online'})");
     return StreamBuilder(
       stream: myDoc.snapshots(),
       builder: (context, AsyncSnapshot<DocumentSnapshot> myDocSnap) {
         try {
           if (!isOffline) {
             return myDocSnap.data.data()['buildings'].length == 0
-                ? BotToast.showSimpleNotification(
-                title: 'You will be notified when tenant adds you')
+                ? Center(
+                    child: Text(
+                      'Press + button to add building and view tenants to tenants to that building',
+                      style: Theme.of(context).textTheme.caption,
+                      textAlign: TextAlign.center,
+                    ),
+                  )
                 : ListView.builder(
-              itemCount: myDocSnap.data.data()['buildings'].length,
-              itemBuilder: (context, index) {
-                return BuildingsCard(
-                  buildingName: myDocSnap.data.data()['buildings'][index],
-                  myDocSnap: myDocSnap,
-                  isOffline: isOffline,
-                );
-              },
-            );
+                    itemCount: myDocSnap.data.data()['buildings'].length,
+                    itemBuilder: (context, index) {
+                      return BuildingsCard(
+                        buildingName: myDocSnap.data.data()['buildings'][index],
+                        myDocSnap: myDocSnap,
+                        isOffline: isOffline,
+                      );
+                    },
+                  );
           } else {
             return myDocSnap.data.data()['offlineBuildings'].length == 0
-                ? BotToast.showSimpleNotification(
-                title: 'No offline tenants, Add one...')
+                ? Center(
+              child: Text(
+                'Press + button to add building and view tenants to tenants to that building',
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .caption,
+                textAlign: TextAlign.center,
+              ),
+            )
                 : ListView.builder(
               itemCount: myDocSnap.data.data()['offlineBuildings'].length,
               itemBuilder: (context, index) {

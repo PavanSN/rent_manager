@@ -1,6 +1,6 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:home_manager/CommonFiles/MonthlyPaymentsContainer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -137,7 +137,7 @@ class TenantTileTrailingBtn extends StatelessWidget {
                   children: <Widget>[
                     Padding(
                       padding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                       child: TextFormField(
                         controller: rentController,
                         decoration: InputDecoration(
@@ -153,8 +153,8 @@ class TenantTileTrailingBtn extends StatelessWidget {
                       child: Text("Save"),
                       onPressed: () {
                         if (rentController.text.isEmpty) {
-                          BotToast.showSimpleNotification(
-                              title: 'Please fill up the empty fields');
+                          Fluttertoast.showToast(
+                              msg: 'Please fill up the empty fields');
                         } else {
                           isOffline
                               ? myDoc

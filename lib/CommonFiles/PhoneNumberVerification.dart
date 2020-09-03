@@ -1,6 +1,6 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -34,8 +34,7 @@ class PhoneNumVerificationUI extends StatelessWidget {
               RaisedButton(
                 onPressed: () {
                   String verId;
-                  BotToast.showSimpleNotification(
-                      title: 'OTP Sent, trying to read OTP');
+                  Fluttertoast.showToast(msg: 'OTP Sent, trying to read OTP');
                   FirebaseAuth.instance.verifyPhoneNumber(
                     phoneNumber: phoneNo.phoneNumber,
                     timeout: Duration(seconds: 60),
@@ -44,11 +43,11 @@ class PhoneNumVerificationUI extends StatelessWidget {
                       FirebaseAuth.instance.currentUser
                           .updatePhoneNumber(credential);
                       myDoc.update({'phoneNum': phoneNo.phoneNumber});
-                      BotToast.showSimpleNotification(
-                          title: 'Phone verification successfully completed');
+                      Fluttertoast.showToast(
+                          msg: 'Phone verification successfully completed');
                     },
                     verificationFailed: (error) {
-                      BotToast.showSimpleNotification(title: error.message);
+                      Fluttertoast.showToast(msg: error.message);
                     },
                     codeSent: (verificationId, [forceResendingToken]) {
                       verId = verificationId;
