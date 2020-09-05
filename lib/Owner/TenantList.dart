@@ -56,31 +56,34 @@ class TenantTile extends StatelessWidget {
       builder: (context, AsyncSnapshot<DocumentSnapshot> tenantSnap) {
         try {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return MonthlyPayments(
-                        tenantSnap: tenantSnap,
-                        isTenant: false,
-                        isOffline: isOffline,
-                        rentAmnt: rentAmnt,
-                        offlineTenantUid: tenantUid,
-                      );
-                    },
-                  ),
-                );
-              },
-              trailing: TenantTileTrailingBtn(
-                tenantSnap: tenantSnap,
-                tenantUid: tenantUid,
-                buildingName: buildingName,
-                isOffline: isOffline,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            child: Card(
+              elevation: 10,
+              child: ListTile(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return MonthlyPayments(
+                          tenantSnap: tenantSnap,
+                          isTenant: false,
+                          isOffline: isOffline,
+                          rentAmnt: rentAmnt,
+                          offlineTenantUid: tenantUid,
+                        );
+                      },
+                    ),
+                  );
+                },
+                trailing: TenantTileTrailingBtn(
+                  tenantSnap: tenantSnap,
+                  tenantUid: tenantUid,
+                  buildingName: buildingName,
+                  isOffline: isOffline,
+                ),
+                title: Text(tenantSnap.data.data()['name']),
+                subtitle: Text('Rent = ${tenantSnap.data.data()['rent']}'),
               ),
-              title: Text(tenantSnap.data.data()['name']),
-              subtitle: Text('Rent = ${tenantSnap.data.data()['rent']}'),
             ),
           );
         } catch (e) {

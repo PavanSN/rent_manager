@@ -14,7 +14,7 @@ import 'CommonFiles/ProfileScreen.dart';
 import 'Models/UserDetails.dart';
 import 'Owner/OwnerHomePage.dart';
 
-int currIndex = 0;
+int currIndex = 1;
 
 void main() {
   runApp(RentManager());

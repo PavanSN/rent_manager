@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/Models/TabPressed.dart';
-import 'package:share/share.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'CommonWidgetsAndData.dart';
@@ -27,15 +26,6 @@ class MonthlyPayments extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.share),
-            onPressed: () {
-              Share.share(
-                  'https://play.google.com/store/apps/details?id=com.pavansn.rent_manager');
-            },
-          ),
-        ],
         centerTitle: true,
         title: Text(
           !isOffline

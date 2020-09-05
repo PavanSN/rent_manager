@@ -68,7 +68,7 @@ class FloatingBtnFcn extends StatelessWidget {
             String tenantPhone = myDocSnap.data.data()['phoneNum'];
             tenantPhone == null
                 ? bottomSheet(
-                context, PhoneNumVerificationUI(), 'Register your number')
+                    context, PhoneNumVerificationUI(), 'Register your number')
                 : bottomSheet(
                     context,
                     AddOwner(
@@ -127,6 +127,10 @@ class Body extends StatelessWidget {
               CheckFor(
                 checkFor: myDocSnap.data.data()['homeId'] != null,
                 text: 'Added owner / Owner accepted your request : ',
+              ),
+              CheckFor(
+                checkFor: myDocSnap.data.data()['rent'] != null,
+                text: 'Owner updated your rent amount : ',
               )
             ],
           ),

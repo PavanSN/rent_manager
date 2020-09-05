@@ -21,165 +21,140 @@ class BuildingsCard extends StatelessWidget {
     var buildingPhoto =
         myDocSnap.data.data()['buildingsPhoto'][buildingName] ?? null;
     return Card(
-      elevation: 10,
+      elevation: 15,
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        height: MediaQuery.of(context).size.height * 0.2,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            ListTile(
-              onTap: () => null,
-              title: Text(buildingName),
-              subtitle: Text(
-                  'Tenants : ${myDocSnap.data.data()[buildingName].length}'),
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.add,
-                  color: Colors.grey,
-                ),
-                onPressed: () => bottomSheet(
-                  context,
-                  AddTenant(
+        child: ListTile(
+          onLongPress: () => deleteBuilding(context, isOffline, buildingName),
+          onTap: () {
+            bottomSheet(
+              context,
+              Column(
+                children: <Widget>[
+                  TenantList(
                     buildingName: buildingName,
                     isOffline: isOffline,
                   ),
-                  'Add Tenant',
-                ),
-              ),
-              leading: GestureDetector(
-                onTap: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) {
-                    return ImageCapture(buildingName: buildingName);
-                  }));
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Image.network(
-                    (buildingPhoto != null)
-                        ? buildingPhoto
-                        : 'https://img.icons8.com/bubbles/50/000000/city.png',
-                    fit: BoxFit.cover,
-                    height: 50,
-                    width: 50,
-                  ),
-                ),
-              ),
-            ),
-            Container(height: 1, color: Colors.grey),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                RaisedButton(
-                  onPressed: () {
-                    bottomSheet(
-                        context,
-                        Column(
-                          children: <Widget>[
-                            Text(
-                              'All the tenant data and building data will be removed and cannot be recovered...',
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 10),
-                            RaisedButton(
-                              child: Text('Delete Now'),
-                              color: Colors.red,
-                              onPressed: () async {
-                                if (!isOffline) {
-                                  List buildings;
-                                  await myDoc.get().then((value) =>
-                                  buildings = value.data()[buildingName]);
-                                  buildings.forEach((tenantUid) {
-                                    updateDoc({'homeId': null, 'rent': null},
-                                        'users/$tenantUid');
-                                  });
-                                  myDoc.update({
-                                    'buildings':
-                                    FieldValue.arrayRemove([buildingName]),
-                                    'userCount':
-                                    FieldValue.arrayRemove(buildings),
-                                    buildingName: FieldValue.delete(),
-                                  }).then((value) {
-                                    FirebaseStorage.instance
-                                        .ref()
-                                        .child(
-                                        'profiles/${FirebaseAuth.instance
-                                            .currentUser.uid}$buildingName.png')
-                                        .delete();
-                                  });
-                                } else {
-                                  List buildings;
-                                  await myDoc.get().then((value) =>
-                                  buildings = value.data()[buildingName]);
-                                  buildings.forEach((tenantUid) {
-                                    myDoc
-                                        .collection('offline')
-                                        .doc(tenantUid)
-                                        .delete();
-                                  });
-                                  myDoc.update({
-                                    'offlineBuildings':
-                                    FieldValue.arrayRemove([buildingName]),
-                                    'offlineTenants':
-                                    FieldValue.arrayRemove(buildings),
-                                    buildingName: FieldValue.delete(),
-                                  });
-                                  FirebaseStorage.instance
-                                      .ref()
-                                      .child(
-                                      'profiles/${FirebaseAuth.instance
-                                          .currentUser.uid}$buildingName.png')
-                                      .delete();
-                                  Navigator.pop(context);
-                                }
-                              },
-                            ),
-                          ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(
+                          Icons.add,
                         ),
-                        'Warning');
-                  },
-                  color: Colors.red,
-                  child: Text('Delete Building'),
-                ),
-                RaisedButton(
-                  onPressed: () {
-                    bottomSheet(
-                      context,
-                      Column(
-                        children: <Widget>[
-                          TenantList(
+                        onPressed: () => bottomSheet(
+                          context,
+                          AddTenant(
                             buildingName: buildingName,
                             isOffline: isOffline,
                           ),
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: () =>
-                                bottomSheet(
-                                  context,
-                                  AddTenant(
-                                    buildingName: buildingName,
-                                    isOffline: isOffline,
-                                  ),
-                                  'Add Tenant',
-                                ),
-                          ),
-                        ],
-                      ),
-                      'Tenants in building : $buildingName',
-                    );
-                  },
-                  color: Colors.green,
-                  child: Text('View Tenants'),
-                ),
-              ],
-            )
-          ],
+                          'Add Tenant',
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+              'Tenants in building : $buildingName',
+            );
+          },
+          title: Text(buildingName),
+          subtitle:
+              Text('Tenants : ${myDocSnap.data.data()[buildingName].length}'),
+          trailing: RaisedButton(
+            color: Colors.green,
+            child: Text('Add Tenant'),
+            onPressed: () => bottomSheet(
+              context,
+              AddTenant(
+                buildingName: buildingName,
+                isOffline: isOffline,
+              ),
+              'Add Tenant',
+            ),
+          ),
+          leading: GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return ImageCapture(buildingName: buildingName);
+              }));
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: Image.network(
+                (buildingPhoto != null)
+                    ? buildingPhoto
+                    : 'https://img.icons8.com/bubbles/50/000000/city.png',
+                fit: BoxFit.cover,
+                height: 50,
+                width: 50,
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+deleteBuilding(context, isOffline, buildingName) {
+  bottomSheet(
+      context,
+      Column(
+        children: <Widget>[
+          Text(
+            'All the tenant data and building data will be removed and cannot be recovered...',
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10),
+          RaisedButton(
+            child: Text('Delete Now'),
+            color: Colors.red,
+            onPressed: () async {
+              if (!isOffline) {
+                List buildings;
+                await myDoc
+                    .get()
+                    .then((value) => buildings = value.data()[buildingName]);
+                buildings.forEach((tenantUid) {
+                  updateDoc({'homeId': null, 'rent': null}, 'users/$tenantUid');
+                });
+                myDoc.update({
+                  'buildings': FieldValue.arrayRemove([buildingName]),
+                  'userCount': FieldValue.arrayRemove(buildings),
+                  buildingName: FieldValue.delete(),
+                }).then((value) {
+                  FirebaseStorage.instance
+                      .ref()
+                      .child(
+                          'profiles/${FirebaseAuth.instance.currentUser.uid}$buildingName.png')
+                      .delete();
+                });
+              } else {
+                List buildings;
+                await myDoc
+                    .get()
+                    .then((value) => buildings = value.data()[buildingName]);
+                buildings.forEach((tenantUid) {
+                  myDoc.collection('offline').doc(tenantUid).delete();
+                });
+                myDoc.update({
+                  'offlineBuildings': FieldValue.arrayRemove([buildingName]),
+                  'offlineTenants': FieldValue.arrayRemove(buildings),
+                  buildingName: FieldValue.delete(),
+                });
+                FirebaseStorage.instance
+                    .ref()
+                    .child(
+                        'profiles/${FirebaseAuth.instance.currentUser.uid}$buildingName.png')
+                    .delete();
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
+      ),
+      'Warning');
 }
 
 PhoneNumber phoneNo;
@@ -249,7 +224,8 @@ class AddTenant extends StatelessWidget {
           onPressed: () {
             if (nameController.text.isEmpty ||
                 rentController.text.isEmpty) {
-              Fluttertoast.showToast(msg: 'Please fill up the empty fields');
+              Fluttertoast.showToast(
+                  msg: 'Please fill up the empty fields');
             } else {
               myDoc.collection('offline').add({
                 'name': nameController.text,
