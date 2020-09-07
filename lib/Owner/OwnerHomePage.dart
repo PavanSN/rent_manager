@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
+import 'package:home_manager/CommonFiles/PhoneNumberVerification.dart';
 import 'package:home_manager/Tenant/TenantHomePage.dart';
 import 'package:share/share.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -51,7 +52,12 @@ class _CheckSubscriptionState extends State<CheckSubscription> {
         child: Icon(Icons.add),
         backgroundColor: Colors.red,
         onPressed: () {
-          !isOffline ? addBuilding(context, false) : addBuilding(context, true);
+          FirebaseAuth.instance.currentUser.phoneNumber != null
+              ? !isOffline
+                  ? addBuilding(context, false)
+                  : addBuilding(context, true)
+              : bottomSheet(
+                  context, PhoneNumVerificationUI(), 'Verify your number');
         },
       ),
       body: StreamBuilder(
