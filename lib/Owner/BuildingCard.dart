@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:home_manager/CommonFiles/CommonWidgetsAndData.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
-import 'BuildingImageUpdater.dart';
 import 'TenantList.dart';
 
 class BuildingsCard extends StatelessWidget {
@@ -61,34 +59,39 @@ class BuildingsCard extends StatelessWidget {
           title: Text(buildingName),
           subtitle:
               Text('Tenants : ${myDocSnap.data.data()[buildingName].length}'),
-          trailing: RaisedButton(
-            color: Colors.green,
-            child: Text('Add Tenant'),
-            onPressed: () => bottomSheet(
-              context,
-              AddTenant(
-                buildingName: buildingName,
-                isOffline: isOffline,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  icon: Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    deleteBuilding(context, isOffline, buildingName);
+                  }),
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: () => bottomSheet(
+                  context,
+                  AddTenant(
+                    buildingName: buildingName,
+                    isOffline: isOffline,
+                  ),
+                  'Add Tenant',
+                ),
               ),
-              'Add Tenant',
-            ),
+            ],
           ),
-          leading: GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                return ImageCapture(buildingName: buildingName);
-              }));
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.network(
-                (buildingPhoto != null)
-                    ? buildingPhoto
-                    : 'https://img.icons8.com/bubbles/50/000000/city.png',
-                fit: BoxFit.cover,
-                height: 50,
-                width: 50,
-              ),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(50),
+            child: Image.network(
+              (buildingPhoto != null)
+                  ? buildingPhoto
+                  : 'https://img.icons8.com/bubbles/50/000000/city.png',
+              fit: BoxFit.cover,
+              height: 50,
+              width: 50,
             ),
           ),
         ),
@@ -123,12 +126,6 @@ deleteBuilding(context, isOffline, buildingName) {
                   'buildings': FieldValue.arrayRemove([buildingName]),
                   'userCount': FieldValue.arrayRemove(buildings),
                   buildingName: FieldValue.delete(),
-                }).then((value) {
-                  FirebaseStorage.instance
-                      .ref()
-                      .child(
-                          'profiles/${FirebaseAuth.instance.currentUser.uid}$buildingName.png')
-                      .delete();
                 });
               } else {
                 List buildings;
@@ -143,11 +140,6 @@ deleteBuilding(context, isOffline, buildingName) {
                   'offlineTenants': FieldValue.arrayRemove(buildings),
                   buildingName: FieldValue.delete(),
                 });
-                FirebaseStorage.instance
-                    .ref()
-                    .child(
-                        'profiles/${FirebaseAuth.instance.currentUser.uid}$buildingName.png')
-                    .delete();
                 Navigator.pop(context);
               }
             },

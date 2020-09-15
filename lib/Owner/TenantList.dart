@@ -130,7 +130,14 @@ class TenantTileTrailingBtn extends StatelessWidget {
           },
         ),
         IconButton(
-          color: Colors.blue,
+          color: Colors.green,
+          icon: Icon(Icons.call),
+          onPressed: () {
+            launch('tel:${tenantSnap.data.data()['phoneNum']}');
+          },
+        ),
+        IconButton(
+          color: Colors.blueGrey,
           icon: Icon(Icons.edit),
           onPressed: () {
             TextEditingController rentController = TextEditingController();
@@ -161,14 +168,14 @@ class TenantTileTrailingBtn extends StatelessWidget {
                         } else {
                           isOffline
                               ? myDoc
-                              .collection('offline')
-                              .doc(tenantUid)
-                              .update({
-                            'rent': rentController.text,
-                          })
+                                  .collection('offline')
+                                  .doc(tenantUid)
+                                  .update({
+                                  'rent': rentController.text,
+                                })
                               : FirebaseFirestore.instance
-                              .doc('users/$tenantUid')
-                              .update({'rent': rentController.text});
+                                  .doc('users/$tenantUid')
+                                  .update({'rent': rentController.text});
                           Navigator.pop(context);
                         }
                       },
@@ -176,13 +183,6 @@ class TenantTileTrailingBtn extends StatelessWidget {
                   ],
                 ),
                 'Edit Tenant');
-          },
-        ),
-        IconButton(
-          color: Colors.green,
-          icon: Icon(Icons.call),
-          onPressed: () {
-            launch('tel:${tenantSnap.data.data()['phoneNum']}');
           },
         )
       ],

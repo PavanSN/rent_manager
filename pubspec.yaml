@@ -10,9 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.3
-  firebase_storage:
-  image_picker:
-  image_cropper:
   fluttertoast:
   states_rebuilder: 2.3.1
   flutter_launcher_icons:
